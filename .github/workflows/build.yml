@@ -1,0 +1,25 @@
+name: Build Visionarys IPA
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build unsigned app
+        run: |
+          mkdir -p Visionarys
+          mv App.swift Visionarys/main.swift
+          cd Visionarys
+          swift build -c release --triple arm64-apple-ios
+
+      - name: Upload .app bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Visionarys-app
+          path: Visionarys/.build/arm64-apple-ios/release/Visionarys
