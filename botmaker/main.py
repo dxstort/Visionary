@@ -40,6 +40,22 @@ Use one header per file. Separate files with a blank line.
 4. Never use markdown backticks ``` around code, only the ###FILE: headers.
 5. If it's a Discord bot, include slash commands, intents, and a ready event.
 6. No extra commentary outside the files, except a one-line summary at the very start starting with [OK].
+7. Any command that moderates or changes the server (delete/purge messages, kick, ban, timeout, warn,
+   manage roles/channels/nicknames, edit server settings, etc.) MUST require the matching Discord permission:
+   - discord.py: add BOTH @app_commands.default_permissions(<perm>=True) and
+     @app_commands.checks.has_permissions(<perm>=True), plus @app_commands.guild_only().
+   - discord.js: call .setDefaultMemberPermissions(PermissionFlagsBits.<Perm>) and also check
+     interaction.memberPermissions.has(...) inside the handler.
+   - Handle the missing-permission error with a clear ephemeral reply, e.g. "You need Manage Messages to use this."
+     In discord.py this means an @<command>.error handler (or bot.tree.on_error) that catches
+     app_commands.MissingPermissions.
+   - Also handle the bot itself lacking permission (Forbidden) with a clear message.
+   - For actions on members (kick/ban/timeout/role changes), refuse if the target's top role is equal to or
+     higher than the invoking user's or the bot's top role, and never act on the server owner or the bot itself.
+8. Only request privileged intents (message_content, members, presences) if the bot actually needs them.
+   Slash commands, fetching/deleting messages by ID and purging do NOT need message_content; it is only
+   needed to read the text of normal messages (prefix commands, auto-mod on message text).
+9. Read tokens from an environment variable (e.g. os.getenv("DISCORD_TOKEN")) with 'TOKEN_HERE' as the fallback.
 If the request is unclear or impossible, reply with a line starting with [ERROR] and a short reason."""
 
 
