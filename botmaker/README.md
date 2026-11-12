@@ -17,6 +17,8 @@ python main.py
 When it prints `Slash commands synced`, use `/process prompt: make a moderation bot with warn/kick/ban`.
 First-time slash commands can take a minute to appear.
 
+Using OpenRouter instead of DeepSeek: put your OpenRouter key in `DEEPSEEK_API_KEY` and uncomment the two OpenRouter lines in `.env`.
+
 If you get "model not found", change `DEEPSEEK_MODEL` in `.env` to a model your DeepSeek account lists.
 
 Never share or commit your `.env`.
