@@ -245,3 +245,371 @@ def nursery(sc, wall=(168, 228, 212)):
         sc.box(T(x, 0.5, -2.4), (1.6, 1.0, 0.8), (240, 200, 150), layer=2)
         for k, c in enumerate(cols):
             sc.box(T(x - 0.35 + k * 0.6, 1.22, -2.4) @ RY(20 * k), (0.42, 0.42, 0.42), c, layer=2, bias=-0.3)
+
+
+# ================================================================ act 2+ sets
+WOOD = (196, 146, 96)
+CHALK = (244, 244, 236)
+
+
+def floor_tiles(sc, x0, x1, z0, z1, c1, c2, step=1.5, y=0.0):
+    i0, i1 = int(math.floor(x0 / step)), int(math.ceil(x1 / step))
+    j0, j1 = int(math.floor(z0 / step)), int(math.ceil(z1 / step))
+    for i in range(i0, i1):
+        for j in range(j0, j1):
+            flat(sc, i * step, i * step + step, j * step, j * step + step, c1 if (i + j) % 2 else c2, y=y)
+
+
+def wall(sc, x, y, z, w, h, color, decal=None, yaw=0, d=0.4):
+    sc.box(T(x, y, z) @ RY(yaw), (w, h, d), color, layer=1, decal=decal)
+
+
+def chair(sc, x, z, yaw=0, c=(70, 110, 190), h=0.8):
+    M = T(x, 0, z) @ RY(yaw)
+    sc.box(M @ T(0, h, 0), (0.9, 0.1, 0.8), c, layer=3)
+    sc.box(M @ T(0, h + 0.45, -0.36), (0.9, 0.8, 0.08), c, layer=3)
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            sc.box(M @ T(sx * 0.38, h / 2, sz * 0.32), (0.07, h, 0.07), (60, 60, 70), layer=3)
+
+
+def desk(sc, x, z, yaw=0, top=WOOD, h=1.0, w=1.4, d=0.9):
+    M = T(x, 0, z) @ RY(yaw)
+    sc.box(M @ T(0, h, 0), (w, 0.09, d), top, layer=3)
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            sc.box(M @ T(sx * (w / 2 - 0.08), h / 2, sz * (d / 2 - 0.08)), (0.07, h, 0.07), (70, 72, 84), layer=3)
+
+
+# ------------------------------------------------------------- power show
+def _banner(D):
+    D.rect(-1, -1, 1, 1, (40, 34, 120))
+    for k in range(14):
+        u = -0.95 + k * 0.146
+        D.poly(star_poly(u, 0.78 if k % 2 else -0.78, 0.06), (255, 214, 70))
+    D.text(0, 0.05, "POWER SHOW", (255, 230, 90), h=0.4)
+
+
+def star_poly(u, v, r):
+    pts = []
+    for i in range(10):
+        a = math.radians(-90 + i * 36)
+        rr = r if i % 2 == 0 else r * 0.45
+        pts.append((u + rr * math.cos(a), v - rr * math.sin(a) * 2.2))
+    return pts
+
+
+def clock_face(hour=6, minute=56, second=0):
+    def decal(D):
+        D.ell(0, 0, 0.98, 0.98, (40, 34, 50), n=40)
+        D.ell(0, 0, 0.88, 0.88, (252, 250, 240), n=40)
+        for k in range(12):
+            a = math.radians(90 - k * 30)
+            D.line([(0.74 * math.cos(a), 0.74 * math.sin(a)), (0.84 * math.cos(a), 0.84 * math.sin(a))],
+                   (40, 34, 50), 0.06 if k % 3 == 0 else 0.03)
+        ah = math.radians(90 - (hour % 12 + minute / 60) * 30)
+        am = math.radians(90 - minute * 6)
+        asec = math.radians(90 - second * 6)
+        D.line([(0, 0), (0.45 * math.cos(ah), 0.45 * math.sin(ah))], (40, 34, 50), 0.09)
+        D.line([(0, 0), (0.7 * math.cos(am), 0.7 * math.sin(am))], (40, 34, 50), 0.06)
+        D.line([(-0.12 * math.cos(asec), -0.12 * math.sin(asec)), (0.78 * math.cos(asec), 0.78 * math.sin(asec))],
+               (220, 50, 50), 0.025)
+        D.ell(0, 0, 0.06, 0.06, (220, 50, 50), n=12)
+
+    return decal
+
+
+STAGE_TOP = 0.9
+STAGE_Z = -6.0
+
+
+def stage(sc, lights=True):
+    """Outdoor Power Show stage in the town plaza. Stage floor top at y=0.9, centred at z=-6, faces +z."""
+    sc.ground((214, 204, 186))
+    for i in range(-12, 13):
+        flat(sc, i * 2.0 - 0.04, i * 2.0 + 0.04, -40, 30, (196, 186, 168), y=0.01)
+    for j in range(-20, 15):
+        flat(sc, -40, 40, j * 2.0 - 0.04, j * 2.0 + 0.04, (196, 186, 168), y=0.01)
+    clouds(sc, seed=8)
+    for i, x in enumerate((-22, -15, 15, 22)):
+        c = HOUSE_COLORS[(i + 2) % len(HOUSE_COLORS)]
+        house(sc, x, -16, w=6, h=4.2, color=c, roof=tuple(int(v * 0.5 + 20) for v in c))
+    for x, z in ((-11, -12), (11, -12), (-14, -4), (14, -4), (-17, 4), (17, 4)):
+        tree(sc, x, z, 5.0)
+    sc.box(T(0, STAGE_TOP / 2, STAGE_Z), (13, STAGE_TOP, 5.2), WOOD, layer=2,
+           decal=lambda D: [D.line([(-1, v), (1, v)], (170, 122, 78), 0.004) for v in (-0.5, 0.0, 0.5)])
+    sc.box(T(0, STAGE_TOP + 0.02, STAGE_Z + 2.55), (13.1, 0.06, 0.12), (170, 120, 72), layer=2)
+    for k in range(3):
+        sc.box(T(0, 0.15 + k * 0.3, STAGE_Z + 2.9 + (2 - k) * 0.35), (3.0, 0.3, 0.35), (186, 136, 88), layer=2)
+    sc.box(T(0, 3.6, STAGE_Z - 2.4), (13, 5.4, 0.4), (60, 40, 110), layer=1)
+    sc.box(T(0, 5.4, STAGE_Z - 2.1), (9.0, 1.5, 0.12), (40, 34, 120), layer=1, decal=_banner)
+    for sx in (-1, 1):
+        sc.box(T(sx * 6.7, 3.9, STAGE_Z - 1.6), (0.9, 6.0, 1.2), (200, 40, 56), layer=2,
+               decal=lambda D: [D.line([(u, -1), (u, 1)], (160, 26, 40), 0.06) for u in (-0.5, 0.0, 0.5)])
+        sc.box(T(sx * 6.7, 3.2, STAGE_Z + 2.2), (0.3, 6.4, 0.3), (64, 64, 76), layer=2)
+    sc.box(T(0, 6.5, STAGE_Z + 2.2), (13.7, 0.35, 0.35), (64, 64, 76), layer=2)
+    sc.box(T(0, 7.25, STAGE_Z - 2.05), (1.5, 1.5, 0.22), (40, 34, 50), layer=2, decal=clock_face())
+    if lights:
+        cols = [(255, 90, 90), (255, 214, 70), (110, 220, 140), (110, 170, 255), (220, 120, 255)]
+        for k in range(21):
+            x = -6.5 + k * 0.65
+            y = 6.25 - 0.35 * math.sin(math.pi * k / 20)
+            sc.blob(T(x, y, STAGE_Z + 2.2), (0.16, 0.2, 0.16), cols[k % 5], layer=2, lit=False, n=8, m=5)
+
+
+def audience(sc, t=0.0, frozen=False, faces=None, popcorn=False, rows=4, per_row=6, standing=False, seed=1):
+    """Seated (or standing) crowd facing the stage (-z). Returns list of (spec, pos)."""
+    from cast import character, crowd_spec, sit
+    rng = np.random.RandomState(seed)
+    out = []
+    for r in range(rows):
+        for c in range(per_row):
+            i = r * per_row + c
+            x = -5.0 + c * (10.0 / max(1, per_row - 1)) + (0.45 if r % 2 else 0)
+            z = 1.0 + r * 1.9
+            spec = crowd_spec(i + seed * 3, adult=(i % 4 == 1))
+            face = (faces[i % len(faces)] if faces else "smile")
+            if standing:
+                cheer = 0.5 + 0.5 * math.sin(t * 9 + i)
+                pose = dict(al=(150 + 25 * cheer, 12), ar=(150 + 25 * cheer, 12), y=0.06 * cheer)
+                p = character(sc, spec, (x, 0, z), yaw=180 + rng.uniform(-12, 12), face=face, pose=pose)
+            else:
+                chair(sc, x, z, yaw=180, c=(84, 70, 150))
+                ll = spec["leg"][1] * spec["s"]
+                pose = sit()
+                pose["head"] = (rng.uniform(-15, 15), 0, 0)
+                if popcorn and i % 3 == 0:
+                    pose["ar"] = (55, 4)
+                p = character(sc, spec, (x, 0.86 - ll, z + 0.05), yaw=180, face=face, pose=pose, shadow=False)
+                if popcorn and i % 3 == 0:
+                    h = p["hand_r"]
+                    sc.box(T(h[0], h[1] + 0.12, h[2]), (0.32, 0.4, 0.32), (230, 50, 50), layer=6,
+                           decal=lambda D: [D.rect(u - 0.12, -1, u + 0.12, 1, (250, 250, 250)) for u in (-0.6, 0, 0.6)])
+                    for k in range(4):
+                        py = h[1] + 0.55 + k * 0.28 + (0 if frozen else ((t * 2 + k * 0.3) % 1.0))
+                        sc.blob(T(h[0] + rng.uniform(-0.25, 0.25), py, h[2] + rng.uniform(-0.2, 0.2)),
+                                (0.12, 0.11, 0.12), (255, 244, 200), layer=6, n=8, m=5)
+            out.append((spec, p))
+    return out
+
+
+def stage_crowd(sc, n=40, face="neutral", seed=5, t=0.0, confused=False, clear=None):
+    """People packed onto the stage, facing the audience (+z). clear=(x, z, r) leaves a gap (e.g. for Pip)."""
+    from cast import character, crowd_spec
+    from engine import add_emote
+    rng = np.random.RandomState(seed)
+    out = []
+    cols = 8
+    for i in range(n):
+        r, c = divmod(i, cols)
+        x = -5.2 + c * 1.48 + (0.6 if r % 2 else 0) + rng.uniform(-0.2, 0.2)
+        z = STAGE_Z + 1.9 - r * 0.95
+        spec = crowd_spec(i + 11, adult=(i % 5 == 2))
+        a = rng.uniform(-30, 40)
+        if clear and (x - clear[0]) ** 2 + (z - clear[1]) ** 2 < clear[2] ** 2:
+            rng.uniform(-20, 60), rng.uniform(-30, 30), rng.uniform(-8, 8), rng.uniform(-25, 25)
+            continue
+        pose = dict(al=(a, 8), ar=(rng.uniform(-20, 60), 8), head=(rng.uniform(-30, 30), rng.uniform(-8, 8), 0))
+        p = character(sc, spec, (x, STAGE_TOP, z), yaw=rng.uniform(-25, 25),
+                      face=("shock" if confused and i % 3 == 0 else face), pose=pose, shadow=False)
+        if confused and i % 4 == 1 and i < 24:
+            add_emote(sc, "?", p["head_top"], t, size=0.5, dy=0.35, start=0.05 * (i % 6), hold=2.0)
+        out.append((spec, p))
+    return out
+
+
+# ----------------------------------------------------------------- school
+def classroom(sc):
+    floor_tiles(sc, -10, 10, -6, 10, (206, 162, 112), (196, 152, 104), step=1.0)
+
+    def back(D):
+        D.rect(-1, -1, 1, -0.7, (120, 160, 200))
+        for u in (-0.62, 0.0, 0.62):
+            D.rect(u - 0.2, -0.2, u + 0.2, 0.6, (252, 252, 250))
+            D.rect(u - 0.17, -0.16, u + 0.17, 0.56, (150, 208, 250))
+            D.line([(u, -0.16), (u, 0.56)], (252, 252, 250), 0.01)
+        for k, c in enumerate(((255, 140, 140), (255, 214, 110), (140, 210, 160), (160, 170, 255))):
+            u = -0.85 + k * 0.08
+            D.rect(u, 0.66, u + 0.06, 0.86, c)
+        D.text(0.62, 0.78, "ABC", (60, 60, 90), h=0.06)
+
+    wall(sc, 0, 3.5, -6.2, 22, 7, (238, 226, 196), decal=back)
+    for sx in (-1, 1):
+        wall(sc, sx * 9.5, 3.5, 0, 16, 7, (232, 218, 186), yaw=90)
+
+
+def class_desks(sc, t=0.0, frozen=True, skip=(), seed=2, faces=("neutral",)):
+    """Grid of desks with seated classmates facing +z (camera side). Returns positions."""
+    from cast import character, crowd_spec, sit
+    rng = np.random.RandomState(seed)
+    out = {}
+    for r in range(3):
+        for c in range(4):
+            x, z = -4.2 + c * 2.8, -3.6 + r * 2.4
+            desk(sc, x, z + 0.75)
+            chair(sc, x, z, yaw=0, c=(214, 96, 70))
+            if (r, c) in skip:
+                out[(r, c)] = (x, z)
+                continue
+            spec = crowd_spec(r * 4 + c + 20)
+            ll = spec["leg"][1] * spec["s"]
+            pose = sit()
+            pose["ar"] = (70, 6)
+            pose["head"] = (rng.uniform(-20, 20), -10, 0)
+            character(sc, spec, (x, 0.86 - ll, z + 0.05), face=faces[(r + c) % len(faces)], pose=pose,
+                      shadow=False)
+            out[(r, c)] = (x, z)
+            sc.box(T(x + 0.2, 1.06, z + 0.75), (0.7, 0.02, 0.5), (252, 252, 248), layer=4)
+    return out
+
+
+def hallway(sc):
+    floor_tiles(sc, -3, 3, -30, 10, (226, 226, 232), (196, 204, 222), step=1.0)
+
+    def locker(D):
+        D.rect(-1, -1, 1, 1, (80, 140, 220))
+        for k in range(-3, 4):
+            u = k * 0.28
+            D.line([(u, -1), (u, 1)], (50, 96, 170), 0.02)
+            for v in (0.62, 0.68, 0.74):
+                D.line([(u - 0.08, v), (u + 0.08, v)], (50, 96, 170), 0.012)
+            D.rect(u + 0.06, 0.0, u + 0.09, 0.14, (220, 220, 230))
+
+    for sx in (-1, 1):
+        for k in range(8):
+            sc.box(T(sx * 3.2, 1.6, -k * 4.0) @ RY(-sx * 90), (4.0, 3.2, 0.8), (80, 140, 220), layer=2, decal=locker)
+        wall(sc, sx * 3.5, 4.5, -12, 40, 3, (236, 230, 214), yaw=90)
+    wall(sc, 0, 3, -31, 8, 6, (236, 230, 214))
+    for k in range(6):
+        sc.blob(T(0, 6.2, -k * 5.0), (1.6, 0.12, 0.6), (255, 252, 230), layer=2, lit=False, e=0.3)
+    sc.box(T(0, 6.4, -12), (8, 0.2, 40), (240, 240, 236), layer=1)
+
+
+def school_building(sc):
+    sc.ground(GRASS)
+    flat(sc, -30, 30, 3.0, 8.0, (214, 208, 198))
+    clouds(sc, seed=4)
+
+    def front(D):
+        D.rect(-1, -1, 1, 1, (196, 86, 70))
+        for k in range(-12, 13):
+            D.line([(-1, k / 12), (1, k / 12)], (176, 74, 60), 0.004)
+        for row in (-0.25, 0.45):
+            for u in (-0.75, -0.45, -0.15, 0.15, 0.45, 0.75):
+                D.rect(u - 0.1, row - 0.17, u + 0.1, row + 0.17, (252, 250, 240))
+                D.rect(u - 0.085, row - 0.15, u + 0.085, row + 0.15, (150, 208, 250))
+        D.rect(-0.12, -1, 0.12, -0.55, (252, 250, 240))
+        D.rect(-0.1, -1, 0.1, -0.58, (120, 80, 56))
+        D.rect(-0.3, 0.8, 0.3, 0.95, (250, 250, 240))
+        D.text(0, 0.875, "SCHOOL", (60, 50, 70), h=0.055)
+
+    sc.box(T(0, 4.0, -2.0), (16, 8.0, 8.0), (196, 86, 70), layer=2, decal=front)
+    sc.box(T(0, 8.15, 1.9), (16.4, 0.5, 0.3), (220, 210, 196), layer=2)
+    sc.box(T(0, 8.15, -5.9), (16.4, 0.5, 0.3), (220, 210, 196), layer=2)
+    for x in (-9.5, 9.5):
+        tree(sc, x, 3.0, 5.0)
+
+
+def lunch_tray(sc, M, live=False):
+    sc.box(M, (1.0, 0.08, 0.7), (230, 120, 60), live=live, layer=6)
+    sc.blob(M @ T(-0.22, 0.1, 0), (0.36, 0.14, 0.36), (255, 214, 100), live=live, layer=6, n=10, m=5)
+    sc.box(M @ T(0.22, 0.12, -0.08), (0.34, 0.16, 0.22), (180, 90, 60), live=live, layer=6)
+    sc.blob(M @ T(0.25, 0.1, 0.2), (0.16, 0.16, 0.16), (230, 50, 60), live=live, layer=6, n=8, m=5)
+
+
+# ------------------------------------------------------------------- home
+def kitchen(sc):
+    floor_tiles(sc, -8, 8, -6, 10, (236, 232, 222), (214, 226, 230), step=1.0)
+
+    def back(D):
+        D.rect(-1, -1, 1, -0.2, (250, 250, 246))
+        for k in range(-10, 11):
+            D.line([(k / 10, -1), (k / 10, -0.2)], (226, 226, 222), 0.004)
+        D.rect(-0.3, 0.05, 0.3, 0.6, (252, 252, 250))
+        D.rect(-0.27, 0.08, 0.27, 0.57, (150, 208, 250))
+
+    wall(sc, 0, 3.5, -4.0, 16, 7, (255, 220, 150), decal=back)
+    desk(sc, 0, 0, top=(232, 232, 236), h=1.2, w=3.2, d=2.0)
+
+
+def plate(sc, M, crumbs=True, cookie=False, live=False):
+    sc.blob(M, (0.9, 0.08, 0.9), (250, 250, 252), e=0.5, e2=1.0, layer=6, live=live, n=20, m=5)
+    if cookie:
+        cookie_obj(sc, M @ T(0, 0.08, 0) @ RX(-90), live=live)
+    if crumbs:
+        rng = np.random.RandomState(3)
+        for _ in range(9):
+            sc.box(M @ T(rng.uniform(-0.25, 0.25), 0.06, rng.uniform(-0.25, 0.25)) @ RY(rng.uniform(0, 90)),
+                   (0.05, 0.04, 0.05), (200, 140, 80), layer=6, live=live)
+
+
+def cookie_obj(sc, M, s=1.0, live=False):
+    cookie(sc, M, s=s, live=live)
+
+
+def bedroom(sc):
+    floor_tiles(sc, -8, 8, -6, 10, (180, 140, 110), (170, 132, 104), step=1.0)
+
+    def back(D):
+        D.rect(-1, -1, 1, 1, (176, 206, 250))
+        for k in range(-20, 21):
+            D.line([(k / 20, -1), (k / 20, 1)], (166, 196, 240), 0.004)
+        D.rect(0.3, 0.0, 0.8, 0.6, (252, 252, 250))
+        D.rect(0.33, 0.03, 0.77, 0.57, (30, 40, 90))
+        D.ell(0.6, 0.4, 0.05, 0.08, (250, 245, 200), n=12)
+        for u, v in ((0.42, 0.45), (0.5, 0.2), (0.7, 0.15)):
+            D.ell(u, v, 0.01, 0.015, (255, 255, 255), n=6)
+        D.rect(-0.8, 0.1, -0.45, 0.6, (255, 230, 120))
+        D.text(-0.625, 0.35, "★", (230, 120, 60), h=0.1)
+
+    wall(sc, 0, 3.5, -3.0, 16, 7, (176, 206, 250), decal=back)
+
+
+def bed(sc, x, z, blanket=(110, 170, 240)):
+    sc.box(T(x, 0.35, z), (2.4, 0.7, 4.0), (150, 104, 70), layer=3)
+    sc.box(T(x, 0.8, z), (2.3, 0.3, 3.9), (250, 250, 250), layer=3)
+    sc.box(T(x, 1.0, z + 0.5), (2.35, 0.2, 2.9), blanket, layer=3)
+    sc.blob(T(x, 1.1, z - 1.45), (1.6, 0.3, 0.7), (255, 255, 255), e=0.5, layer=3)
+    sc.box(T(x, 1.1, z - 2.0), (2.4, 2.2, 0.2), (150, 104, 70), layer=3)
+
+
+# ------------------------------------------------------------------ props
+def bus(sc, M):
+    yel = (255, 196, 40)
+
+    def side(D):
+        D.rect(-1, -1, 1, 1, yel)
+        D.rect(-1, -0.35, 1, -0.25, (30, 30, 36))
+        for k in range(6):
+            u = -0.8 + k * 0.3
+            D.rect(u - 0.11, 0.05, u + 0.11, 0.7, (40, 44, 60))
+            D.rect(u - 0.09, 0.08, u + 0.09, 0.66, (160, 214, 250))
+        D.text(0, -0.65, "SCHOOL BUS", (30, 30, 36), h=0.14)
+
+    sc.box(M, (2.4, 2.4, 8.0) if False else (8.0, 2.4, 2.4), yel, layer=6, decal=side)
+    sc.box(M @ T(4.05, -0.4, 0), (0.2, 1.2, 2.2), (220, 220, 230), layer=6)
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            sc.blob(M @ T(sx * 2.6, -1.3, sz * 1.1) @ RX(90), (0.9, 0.9, 0.4), (30, 30, 36), e=1.0, layer=6,
+                    n=14, m=6)
+
+
+def trophy(sc, M, s=1.0):
+    gold = (250, 200, 60)
+    sc.box(M @ T(0, 0.25 * s, 0), (1.2 * s, 0.5 * s, 1.2 * s), (90, 60, 40), layer=5)
+    sc.blob(M @ T(0, 0.8 * s, 0), (0.4 * s, 0.6 * s, 0.4 * s), gold, e=0.8, layer=5)
+    sc.blob(M @ T(0, 1.9 * s, 0), (1.6 * s, 1.7 * s, 1.6 * s), gold, e=0.9, layer=5)
+    for sx in (-1, 1):
+        sc.blob(M @ T(sx * 0.95 * s, 2.1 * s, 0) @ RZ(sx * 20), (0.3 * s, 0.9 * s, 0.25 * s), gold, layer=5)
+    sc.box(M @ T(0, 0.25 * s, 0.61 * s), (0.7 * s, 0.25 * s, 0.02 * s), (250, 220, 120), layer=5,
+           decal=lambda D: D.text(0, 0, "1ST", (60, 40, 20), h=0.6))
+
+
+def chalkboard(sc, drawing):
+    sc.ground((120, 96, 76))
+    wall(sc, 0, 3, -1.0, 20, 8, (226, 214, 190))
+    sc.box(T(0, 2.4, -0.7), (6.4, 3.6, 0.2), (150, 104, 70), layer=2)
+    sc.box(T(0, 2.4, -0.58), (6.0, 3.2, 0.1), (52, 92, 70), layer=3, decal=drawing)
+    sc.box(T(0, 0.55, -0.45), (6.2, 0.12, 0.35), (150, 104, 70), layer=3)
+    for k, c in enumerate(((250, 250, 250), (255, 220, 120), (255, 150, 170))):
+        sc.box(T(-2.2 + k * 0.4, 0.66, -0.4), (0.25, 0.07, 0.07), c, layer=4)

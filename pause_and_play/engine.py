@@ -214,6 +214,8 @@ class Decal:
         self.poly([(u0, v0), (u1, v0), (u1, v1), (u0, v1)], fill)
 
     def text(self, cu, cv, txt, fill, h=0.5):
+        if h * 2 * self.kv > 3000:
+            return  # surface is right against the lens; nothing readable to draw
         f = font(max(6, h * 2 * self.kv))
         x, y = self.pt(cu, cv)
         self.d.text((x, y), txt, font=f, fill=self.col(fill), anchor="mm")
