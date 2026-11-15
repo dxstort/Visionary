@@ -8,12 +8,12 @@ from cast import BRAX, DAD, HERO, MAYOR, PIP, TUCK, character
 from engine import Scene, font
 
 ROWS = [
-    (HERO, ["smirk", "shock", "grit", "sparkle"], "HERO (name TBC)", "orange cap, bolt hoodie"),
+    (HERO, ["smirk", "shock", "grit", "sparkle"], "HERO (name TBC)", "teal pom-pom beanie, bolt hoodie"),
     (PIP, ["smile", "smug", "chew0", "sparkle"], "PIP", "little sister, age 4"),
     (TUCK, ["grin", "shock", "grit", "sparkle"], "TUCK", "flying, goggles + cape"),
     (BRAX, ["laugh", "shock", "grit", "smirk"], "BRAX", "super strength"),
     (DAD, ["smile", "shock", "miserable", "sparkle"], "DAD", "talks to pigeons"),
-    (MAYOR, ["smile", "shock", "grit", "sleep"], "MAYOR BIGSBY", "weighs a LOT"),
+    (MAYOR, ["smile", "shock", "grit", "sleep"], "MAYOR BIGSBY", "bowler hat, sash, weighs a LOT"),
 ]
 BG = ((255, 244, 214), (255, 226, 180))
 
@@ -21,7 +21,7 @@ BG = ((255, 244, 214), (255, 226, 180))
 def body_cell(spec, w=420, h=470):
     hgt = (spec["leg"][1] + spec["torso"][1] + spec["head"][1]) * spec["s"]
     k = max(hgt + 0.5, spec["torso"][0] * spec["s"] * 1.9) / 3.3
-    sc = Scene((2.6 * k, hgt * 0.5 + 0.9 * k, 8.5 * k), (0, hgt * 0.5 + 0.05, 0), fov=27, W=w, H=h, sky=BG, cy=0.47)
+    sc = Scene((2.6 * k, hgt * 0.5 + 0.9 * k, 8.5 * k), (0, hgt * 0.5 + 0.05, 0), fov=27, W=w, H=h, sky=BG, cy=0.47, post=False)
     sc.ground((238, 205, 150))
     character(sc, spec, yaw=18, face="smile", pose=dict(al=(0, 10), ar=(0, 10)))
     return sc.render()
@@ -31,7 +31,7 @@ def face_cell(spec, expr, w=300, h=300):
     s = spec["s"]
     hy = (spec["leg"][1] + spec["torso"][1] + spec["head"][1] * (0.72 if spec["style"] == "tophat" else 0.55)) * s
     d = 3.3 * s * spec["head"][0] + 0.6
-    sc = Scene((0.5 * s, hy + 0.15 * s, d), (0, hy, 0), fov=30, W=w, H=h, sky=BG, cy=0.5)
+    sc = Scene((0.5 * s, hy + 0.15 * s, d), (0, hy, 0), fov=30, W=w, H=h, sky=BG, cy=0.5, post=False)
     character(sc, spec, yaw=8, face=expr, shadow=False)
     return sc.render()
 

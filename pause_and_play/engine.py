@@ -9,14 +9,57 @@ import math
 import os
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_PATH = os.path.join(HERE, "fonts", "Montserrat-ExtraBold.woff")
 SS = 2
 NEAR = 0.15
-LIGHT = np.array([0.35, 0.85, 0.4])
+LIGHT = np.array([-0.42, 0.78, 0.5])
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
+AMB, DIF = 0.64, 0.44
+
+_mesh_cache = {}
+
+
+def _spow(v, e):
+    return np.sign(v) * np.abs(v) ** e
+
+
+def blob_mesh(e, n, m):
+    """Unit superellipsoid (e=1 sphere, e->0 box): verts, quad indices, per-quad normals (unit-size space)."""
+    key = (round(e, 3), n, m)
+    if key in _mesh_cache:
+        return _mesh_cache[key]
+    th = np.linspace(-math.pi, math.pi, n + 1)
+    ph = np.linspace(-math.pi / 2, math.pi / 2, m + 1)
+    P, TH = np.meshgrid(ph, th, indexing="ij")
+    cp = _spow(np.cos(P), e)
+    V = 0.5 * np.stack([cp * _spow(np.sin(TH), e), _spow(np.sin(P), e), cp * _spow(np.cos(TH), e)], -1).reshape(-1, 3)
+    Q = []
+    for i in range(m):
+        for j in range(n):
+            a = i * (n + 1) + j
+            Q.append((a, a + 1, a + n + 2, a + n + 1))
+    Q = np.array(Q)
+    pc, tc = (ph[:-1] + ph[1:]) / 2, (th[:-1] + th[1:]) / 2
+    Pc, Tc = np.meshgrid(pc, tc, indexing="ij")
+    c2 = _spow(np.cos(Pc), 2 - e)
+    Nn = np.stack([c2 * _spow(np.sin(Tc), 2 - e), _spow(np.sin(Pc), 2 - e), c2 * _spow(np.cos(Tc), 2 - e)], -1).reshape(-1, 3)
+    _mesh_cache[key] = (V, Q, Nn)
+    return _mesh_cache[key]
+
+
+_vig_cache = {}
+
+
+def vignette(size):
+    if size not in _vig_cache:
+        w, h = size
+        y, x = np.mgrid[0:h, 0:w]
+        r = np.sqrt(((x - w / 2) / (w * 0.75)) ** 2 + ((y - h * 0.45) / (h * 0.75)) ** 2)
+        _vig_cache[size] = Image.fromarray((255 * np.clip(1.06 - 0.42 * r ** 2.2, 0.55, 1.0)).astype(np.uint8), "L")
+    return _vig_cache[size]
 
 _font_cache = {}
 
@@ -166,7 +209,7 @@ class Decal:
 
 class Scene:
     def __init__(self, cam, tgt, fov=40, W=1080, H=1920, sky=((120, 190, 255), (215, 238, 255)),
-                 grade=None, gmix=1.0, cy=0.38, roll=0.0):
+                 grade=None, gmix=1.0, cy=0.38, roll=0.0, fog=None, post=True):
         self.W, self.H = W * SS, H * SS
         self.outW, self.outH = W, H
         self.cam = np.asarray(cam, float)
@@ -190,8 +233,19 @@ class Scene:
         self.overlays = []
         self.flash = 0.0
         self.fade = 0.0
+        self.fog = fog
+        self.post = post
+        self.Rc = np.stack([self.r, self.u, self.f]).T
 
     # -- colour / projection helpers
+    def haze(self, c, depth):
+        """Blend toward the horizon colour with distance (cheap aerial perspective)."""
+        if not self.fog or depth <= self.fog[0]:
+            return c
+        k = min(1.0, (depth - self.fog[0]) / (self.fog[1] - self.fog[0])) * 0.7
+        h = self.sky[1]
+        return tuple(c[i] + (h[i] - c[i]) * k for i in range(3)) + tuple(c[3:4])
+
     def col(self, c, live=False):
         if live:
             return tuple(int(clamp(v, 0, 255)) for v in c[:3]) + tuple(c[3:4])
@@ -227,13 +281,14 @@ class Scene:
         return out
 
     # -- primitives
-    def box(self, M, size, color, layer=5, decal=None, live=False, outline=True, lit=True, bias=0.0,
+    def box(self, M, size, color, layer=5, decal=None, live=False, outline=False, lit=True, bias=0.0,
             decal_face=4):
         size = np.asarray(size, float)
         corners = (_BOX_CORNERS * size) @ M[:3, :3].T + M[:3, 3]
         center = M[:3, 3]
         depth = float(np.linalg.norm(center - self.cam)) + bias
         Rm = M[:3, :3]
+        color = self.haze(color, depth)
 
         def draw(d):
             for fi, (idx, n) in enumerate(_BOX_FACES):
@@ -245,17 +300,82 @@ class Scene:
                 clipped = self._clip(cp)
                 if len(clipped) < 3:
                     continue
-                k = (0.76 + 0.28 * max(0.0, float(nw @ LIGHT))) if lit else 1.0
+                k = (AMB + DIF * max(0.0, float(nw @ LIGHT))) if lit else 1.0
                 fill = self.col(shade(color, k), live)
                 pts = [self.proj_c(c) for c in clipped]
                 if outline:
                     d.polygon(pts, fill=fill, outline=self.col(shade(color, k * 0.72), live), width=SS)
                 else:
-                    d.polygon(pts, fill=fill)
+                    d.polygon(pts, fill=fill, outline=fill)
                 if decal and fi == decal_face and len(clipped) == 4 and all(c[2] > NEAR for c in cp):
                     dc = Decal(d, *[self.proj_c(c) for c in cp], lambda c: self.col(c, live))
                     dc.lit = k
                     decal(dc)
+
+        self.items.append((layer, -depth, len(self.items), draw))
+
+    def blob(self, M, size, color, e=1.0, layer=5, live=False, bias=0.0, decal=None, n=14, m=8, lit=True):
+        """Rounded solid (superellipsoid). decal is drawn on the flat-ish front (+z) like a box face."""
+        V, Q, Nn = blob_mesh(e, n, m)
+        size = np.asarray(size, float)
+        Rm, center = M[:3, :3], M[:3, 3]
+        Wv = (V * size) @ Rm.T + center
+        Nw = Nn / size
+        Nw = (Nw / np.linalg.norm(Nw, axis=1)[:, None]) @ Rm.T
+        depth = float(np.linalg.norm(center - self.cam)) + bias
+        color = self.haze(color, depth)
+
+        def draw(d):
+            C = (Wv - self.cam) @ self.Rc
+            z = C[:, 2]
+            if z.min() < NEAR:
+                return
+            sx, sy = self.cx + self.fl * C[:, 0] / z, self.cy - self.fl * C[:, 1] / z
+            qc = Wv[Q].mean(axis=1)
+            vis = np.nonzero(((self.cam - qc) * Nw).sum(1) > 0)[0]
+            lvl = np.round(np.clip(Nw @ LIGHT, 0, 1) * 14).astype(int) if lit else np.full(len(Q), 14)
+            cols = {}
+            for qi in vis[np.argsort(-z[Q[vis]].mean(1))]:
+                l = lvl[qi]
+                if l not in cols:
+                    cols[l] = self.col(shade(color, (AMB + DIF * l / 14) if lit else 1.0), live)
+                q = Q[qi]
+                d.polygon([(sx[q[0]], sy[q[0]]), (sx[q[1]], sy[q[1]]), (sx[q[2]], sy[q[2]]), (sx[q[3]], sy[q[3]])],
+                          fill=cols[l], outline=cols[l])
+            if decal:
+                fn = Rm[:, 2]
+                fc = center + fn * size[2] / 2
+                if fn @ (self.cam - fc) > 0.12 * np.linalg.norm(self.cam - fc):
+                    hx, hy = Rm[:, 0] * size[0] / 2, Rm[:, 1] * size[1] / 2
+                    cp = [self.to_cam(fc + a * hx + b * hy) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+                    if all(c[2] > NEAR for c in cp):
+                        dc = Decal(d, *[self.proj_c(c) for c in cp], lambda c: self.col(c, live))
+                        dc.lit = AMB + DIF * max(0.0, float(fn @ LIGHT))
+                        decal(dc)
+
+        self.items.append((layer, -depth, len(self.items), draw))
+
+    def solid(self, M, verts, faces, color, layer=2, live=False, bias=0.0):
+        """Convex solid from local verts and faces (index lists, CCW from outside)."""
+        Wv = np.asarray(verts, float) @ M[:3, :3].T + M[:3, 3]
+        ctr = Wv.mean(axis=0)
+        depth = float(np.linalg.norm(ctr - self.cam)) + bias
+        color = self.haze(color, depth)
+
+        def draw(d):
+            for f in faces:
+                P = Wv[list(f)]
+                nrm = np.cross(P[1] - P[0], P[2] - P[0])
+                nrm = nrm / (np.linalg.norm(nrm) + 1e-9)
+                if nrm @ (ctr - P[0]) > 0:
+                    nrm = -nrm
+                if nrm @ (self.cam - P.mean(axis=0)) <= 0:
+                    continue
+                cl = self._clip([self.to_cam(p) for p in P])
+                if len(cl) < 3:
+                    continue
+                fill = self.col(shade(color, AMB + DIF * max(0.0, float(nrm @ LIGHT))), live)
+                d.polygon([self.proj_c(c) for c in cl], fill=fill, outline=fill)
 
         self.items.append((layer, -depth, len(self.items), draw))
 
@@ -327,6 +447,11 @@ class Scene:
         for fn in self.overlays:
             fn(d, self.W, self.H)
         img = img.reduce(SS) if SS > 1 else img
+        if self.post:
+            small = img.resize((img.size[0] // 6, img.size[1] // 6), Image.BILINEAR)
+            small = small.point(lambda v: max(0, v - 150) * 2.2).filter(ImageFilter.GaussianBlur(7))
+            img = Image.blend(img, ImageChops.screen(img, small.resize(img.size, Image.BILINEAR)), 0.4)
+            img = Image.composite(img, Image.new("RGB", img.size, self.col((20, 14, 50))), vignette(img.size))
         if self.flash > 0:
             img = Image.blend(img, Image.new("RGB", img.size, (255, 255, 255)), clamp(self.flash))
         if self.fade > 0:
@@ -393,6 +518,8 @@ def emote_draw(kind, d, x, y, s, t=0.0):
             pts = [(cx + r * 0.78 * math.cos(a0 + da), cy + r * 0.78 * math.sin(a0 + da))
                    for da in np.linspace(-0.58, 0.58, 9)]
             d.line(pts, fill=(245, 45, 55), width=w, joint="curve")
+            for ex, ey in (pts[0], pts[-1]):
+                d.ellipse([ex - w / 2, ey - w / 2, ex + w / 2, ey + w / 2], fill=(245, 45, 55))
     elif kind == "bulb":
         r = s * 0.36
         for i in range(8):
