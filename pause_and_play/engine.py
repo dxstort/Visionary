@@ -18,6 +18,16 @@ NEAR = 0.15
 LIGHT = np.array([-0.42, 0.78, 0.5])
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
 AMB, DIF = 0.64, 0.44
+AMBC = np.array([0.7, 0.72, 0.84])   # cool sky fill in the shadows
+SUNC = np.array([0.42, 0.38, 0.28])   # warm key light
+
+
+def lightc(c, nl, lit=True):
+    """Colour lit by a warm sun (n.l = nl) over a cool ambient."""
+    if not lit:
+        return tuple(c[:3]) + tuple(c[3:4])
+    k = AMBC + SUNC * max(0.0, nl)
+    return (c[0] * k[0], c[1] * k[1], c[2] * k[2]) + tuple(c[3:4])
 
 _mesh_cache = {}
 
@@ -26,16 +36,18 @@ def _spow(v, e):
     return np.sign(v) * np.abs(v) ** e
 
 
-def blob_mesh(e, n, m):
-    """Unit superellipsoid (e=1 sphere, e->0 box): verts, quad indices, per-quad normals (unit-size space)."""
-    key = (round(e, 3), n, m)
+def blob_mesh(e, n, m, e2=None):
+    """Unit superellipsoid: e = vertical exponent, e2 = horizontal (1 round, ->0 square).
+    e=0.3, e2=1 gives a toy-style cylinder head. Returns verts, quad indices, per-quad normals."""
+    e2 = e if e2 is None else e2
+    key = (round(e, 3), round(e2, 3), n, m)
     if key in _mesh_cache:
         return _mesh_cache[key]
     th = np.linspace(-math.pi, math.pi, n + 1)
     ph = np.linspace(-math.pi / 2, math.pi / 2, m + 1)
     P, TH = np.meshgrid(ph, th, indexing="ij")
     cp = _spow(np.cos(P), e)
-    V = 0.5 * np.stack([cp * _spow(np.sin(TH), e), _spow(np.sin(P), e), cp * _spow(np.cos(TH), e)], -1).reshape(-1, 3)
+    V = 0.5 * np.stack([cp * _spow(np.sin(TH), e2), _spow(np.sin(P), e), cp * _spow(np.cos(TH), e2)], -1).reshape(-1, 3)
     Q = []
     for i in range(m):
         for j in range(n):
@@ -45,7 +57,7 @@ def blob_mesh(e, n, m):
     pc, tc = (ph[:-1] + ph[1:]) / 2, (th[:-1] + th[1:]) / 2
     Pc, Tc = np.meshgrid(pc, tc, indexing="ij")
     c2 = _spow(np.cos(Pc), 2 - e)
-    Nn = np.stack([c2 * _spow(np.sin(Tc), 2 - e), _spow(np.sin(Pc), 2 - e), c2 * _spow(np.cos(Tc), 2 - e)], -1).reshape(-1, 3)
+    Nn = np.stack([c2 * _spow(np.sin(Tc), 2 - e2), _spow(np.sin(Pc), 2 - e), c2 * _spow(np.cos(Tc), 2 - e2)], -1).reshape(-1, 3)
     _mesh_cache[key] = (V, Q, Nn)
     return _mesh_cache[key]
 
@@ -58,7 +70,7 @@ def vignette(size):
         w, h = size
         y, x = np.mgrid[0:h, 0:w]
         r = np.sqrt(((x - w / 2) / (w * 0.75)) ** 2 + ((y - h * 0.45) / (h * 0.75)) ** 2)
-        _vig_cache[size] = Image.fromarray((255 * np.clip(1.06 - 0.42 * r ** 2.2, 0.55, 1.0)).astype(np.uint8), "L")
+        _vig_cache[size] = Image.fromarray((255 * np.clip(1.04 - 0.3 * r ** 2.2, 0.7, 1.0)).astype(np.uint8), "L")
     return _vig_cache[size]
 
 _font_cache = {}
@@ -207,9 +219,46 @@ class Decal:
         self.d.text((x, y), txt, font=f, fill=self.col(fill), anchor="mm")
 
 
+class WrapDecal(Decal):
+    """Decal whose (u, v) wraps round a horizontally round solid: u -> angle, v -> height.
+    Primitives on the far side of the surface are skipped."""
+
+    def __init__(self, sc, draw, M, size, span, colfn):
+        self.sc, self.d, self.col = sc, draw, colfn
+        self.R, self.o = M[:3, :3], M[:3, 3]
+        self.hw, self.hh, self.hd = size[0] / 2 * 1.006, size[1] / 2 * 1.08, size[2] / 2 * 1.006
+        self.span = span
+        a, b = np.array(self.pt(-1, 0)), np.array(self.pt(1, 0))
+        c, e = np.array(self.pt(0, -1)), np.array(self.pt(0, 1))
+        self.k, self.kv = 0.5 * np.linalg.norm(b - a), 0.5 * np.linalg.norm(e - c)
+
+    def world(self, u, v):
+        a = u * self.span
+        return self.R @ np.array([math.sin(a) * self.hw, v * self.hh, math.cos(a) * self.hd]) + self.o
+
+    def pt(self, u, v):
+        x, y = self.sc.proj_c(self.sc.to_cam(self.world(u, v)))
+        return (float(x), float(y))
+
+    def _vis(self, pts):
+        u = sum(p[0] for p in pts) / len(pts)
+        v = sum(p[1] for p in pts) / len(pts)
+        a = u * self.span
+        nrm = self.R @ np.array([math.sin(a), 0.0, math.cos(a)])
+        return nrm @ (self.sc.cam - self.world(u, v)) > 0
+
+    def poly(self, pts, fill):
+        if self._vis(pts):
+            Decal.poly(self, pts, fill)
+
+    def line(self, pts, fill, w=0.06):
+        if self._vis(pts):
+            Decal.line(self, pts, fill, w)
+
+
 class Scene:
     def __init__(self, cam, tgt, fov=40, W=1080, H=1920, sky=((120, 190, 255), (215, 238, 255)),
-                 grade=None, gmix=1.0, cy=0.38, roll=0.0, fog=None, post=True):
+                 grade=None, gmix=1.0, cy=0.38, roll=0.0, fog=None, post=True, dof=None):
         self.W, self.H = W * SS, H * SS
         self.outW, self.outH = W, H
         self.cam = np.asarray(cam, float)
@@ -235,6 +284,7 @@ class Scene:
         self.fade = 0.0
         self.fog = fog
         self.post = post
+        self.dof = dof  # (focus distance, blur px): everything farther than ~1.3x focus is drawn soft
         self.Rc = np.stack([self.r, self.u, self.f]).T
 
     # -- colour / projection helpers
@@ -300,8 +350,9 @@ class Scene:
                 clipped = self._clip(cp)
                 if len(clipped) < 3:
                     continue
-                k = (AMB + DIF * max(0.0, float(nw @ LIGHT))) if lit else 1.0
-                fill = self.col(shade(color, k), live)
+                nl = float(nw @ LIGHT)
+                k = (AMB + DIF * max(0.0, nl)) if lit else 1.0
+                fill = self.col(lightc(color, nl, lit), live)
                 pts = [self.proj_c(c) for c in clipped]
                 if outline:
                     d.polygon(pts, fill=fill, outline=self.col(shade(color, k * 0.72), live), width=SS)
@@ -314,9 +365,12 @@ class Scene:
 
         self.items.append((layer, -depth, len(self.items), draw))
 
-    def blob(self, M, size, color, e=1.0, layer=5, live=False, bias=0.0, decal=None, n=14, m=8, lit=True):
-        """Rounded solid (superellipsoid). decal is drawn on the flat-ish front (+z) like a box face."""
-        V, Q, Nn = blob_mesh(e, n, m)
+    def blob(self, M, size, color, e=1.0, layer=5, live=False, bias=0.0, decal=None, n=14, m=8, lit=True, e2=None,
+             span=1.2):
+        """Rounded solid (superellipsoid). A decal is wrapped round the front (+z) when the solid is round
+        horizontally (e2 >= 0.8; `span` = radians covered by u in [-1, 1]), else drawn flat like a box face."""
+        e2 = e if e2 is None else e2
+        V, Q, Nn = blob_mesh(e, n, m, e2)
         size = np.asarray(size, float)
         Rm, center = M[:3, :3], M[:3, 3]
         Wv = (V * size) @ Rm.T + center
@@ -333,16 +387,22 @@ class Scene:
             sx, sy = self.cx + self.fl * C[:, 0] / z, self.cy - self.fl * C[:, 1] / z
             qc = Wv[Q].mean(axis=1)
             vis = np.nonzero(((self.cam - qc) * Nw).sum(1) > 0)[0]
-            lvl = np.round(np.clip(Nw @ LIGHT, 0, 1) * 14).astype(int) if lit else np.full(len(Q), 14)
+            lvl = np.round(np.clip(Nw @ LIGHT, 0, 1) * 48).astype(int) if lit else np.full(len(Q), 48)
             cols = {}
             for qi in vis[np.argsort(-z[Q[vis]].mean(1))]:
                 l = lvl[qi]
                 if l not in cols:
-                    cols[l] = self.col(shade(color, (AMB + DIF * l / 14) if lit else 1.0), live)
+                    cols[l] = self.col(lightc(color, l / 48, lit), live)
                 q = Q[qi]
                 d.polygon([(sx[q[0]], sy[q[0]]), (sx[q[1]], sy[q[1]]), (sx[q[2]], sy[q[2]]), (sx[q[3]], sy[q[3]])],
                           fill=cols[l], outline=cols[l])
-            if decal:
+            if decal and e2 >= 0.8:
+                fn = Rm[:, 2]
+                if fn @ (self.cam - center) > -0.25 * np.linalg.norm(self.cam - center):
+                    dc = WrapDecal(self, d, M, size, span, lambda c: self.col(c, live))
+                    dc.lit = AMB + DIF * max(0.0, float(fn @ LIGHT))
+                    decal(dc)
+            elif decal:
                 fn = Rm[:, 2]
                 fc = center + fn * size[2] / 2
                 if fn @ (self.cam - fc) > 0.12 * np.linalg.norm(self.cam - fc):
@@ -374,7 +434,7 @@ class Scene:
                 cl = self._clip([self.to_cam(p) for p in P])
                 if len(cl) < 3:
                     continue
-                fill = self.col(shade(color, AMB + DIF * max(0.0, float(nrm @ LIGHT))), live)
+                fill = self.col(lightc(color, float(nrm @ LIGHT)), live)
                 d.polygon([self.proj_c(c) for c in cl], fill=fill, outline=fill)
 
         self.items.append((layer, -depth, len(self.items), draw))
@@ -442,7 +502,18 @@ class Scene:
     def render(self):
         img = self._sky_img()
         d = ImageDraw.Draw(img, "RGBA")
-        for _, _, _, fn in sorted(self.items, key=lambda it: (it[0], it[1], it[2])):
+        order = sorted(self.items, key=lambda it: (it[0], it[1], it[2]))
+        if self.dof:
+            focus, rad = self.dof
+            far = [it for it in order if it[0] <= 1 or -it[1] > focus * 1.3]
+            near = [it for it in order if not (it[0] <= 1 or -it[1] > focus * 1.3)]
+            for it in far:
+                it[3](d)
+            small = img.reduce(SS).filter(ImageFilter.GaussianBlur(rad))
+            img = small.resize((self.W, self.H), Image.BILINEAR)
+            d = ImageDraw.Draw(img, "RGBA")
+            order = near
+        for _, _, _, fn in order:
             fn(d)
         for fn in self.overlays:
             fn(d, self.W, self.H)
@@ -450,7 +521,7 @@ class Scene:
         if self.post:
             small = img.resize((img.size[0] // 6, img.size[1] // 6), Image.BILINEAR)
             small = small.point(lambda v: max(0, v - 150) * 2.2).filter(ImageFilter.GaussianBlur(7))
-            img = Image.blend(img, ImageChops.screen(img, small.resize(img.size, Image.BILINEAR)), 0.4)
+            img = Image.blend(img, ImageChops.screen(img, small.resize(img.size, Image.BILINEAR)), 0.3)
             img = Image.composite(img, Image.new("RGB", img.size, self.col((20, 14, 50))), vignette(img.size))
         if self.flash > 0:
             img = Image.blend(img, Image.new("RGB", img.size, (255, 255, 255)), clamp(self.flash))

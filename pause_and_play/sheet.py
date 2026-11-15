@@ -8,12 +8,12 @@ from cast import BRAX, DAD, HERO, MAYOR, PIP, TUCK, character
 from engine import Scene, font
 
 ROWS = [
-    (HERO, ["smirk", "shock", "grit", "sparkle"], "HERO (name TBC)", "teal pom-pom beanie, bolt hoodie"),
-    (PIP, ["smile", "smug", "chew0", "sparkle"], "PIP", "little sister, age 4"),
+    (HERO, ["smirk", "shock", "grit", "sparkle"], "HERO", "yellow bucket hat with pause pin, clock hoodie"),
+    (PIP, ["smile", "smug", "chew0", "sparkle"], "PIP", "little sister, age 4, overalls"),
     (TUCK, ["grin", "shock", "grit", "sparkle"], "TUCK", "flying, goggles + cape"),
-    (BRAX, ["laugh", "shock", "grit", "smirk"], "BRAX", "super strength"),
+    (BRAX, ["laugh", "shock", "grit", "smirk"], "BRAX", "super strength, shades"),
     (DAD, ["smile", "shock", "miserable", "sparkle"], "DAD", "talks to pigeons"),
-    (MAYOR, ["smile", "shock", "grit", "sleep"], "MAYOR BIGSBY", "bowler hat, sash, weighs a LOT"),
+    (MAYOR, ["smile", "shock", "grit", "sleep"], "MAYOR BIGSBY", "top hat, sash, weighs a LOT"),
 ]
 BG = ((255, 244, 214), (255, 226, 180))
 

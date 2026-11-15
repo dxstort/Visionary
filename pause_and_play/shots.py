@@ -14,7 +14,7 @@ SKY = ((95, 175, 255), (205, 235, 255))
 INDOOR = ((170, 235, 215), (170, 235, 215))
 
 
-def cam(pos, tgt, u, push=0.1, fov=38, w=None, **kw):
+def cam(pos, tgt, u, push=0.1, fov=38, w=None, blur=None, **kw):
     """Default camera: slow push-in of `push` (fraction of the distance) across the shot.
     `w` = world width visible at the target at the start of the shot (sets the distance along pos->tgt)."""
     pos, tgt = np.asarray(pos, float), np.asarray(tgt, float)
@@ -22,7 +22,10 @@ def cam(pos, tgt, u, push=0.1, fov=38, w=None, **kw):
         dirn = (pos - tgt) / np.linalg.norm(pos - tgt)
         pos = tgt + dirn * w / (2 * math.tan(math.radians(fov) / 2) * 9 / 16)
     p = pos + (tgt - pos) * push * u
-    return Scene(p, tgt, fov=fov, **kw)
+    focus = float(np.linalg.norm(tgt - p))
+    if blur is None:
+        blur = min(12.0, 60.0 / focus)
+    return Scene(p, tgt, fov=fov, dof=(focus, blur) if blur > 0 else None, **kw)
 
 
 def key(t, dur=0.2):
@@ -85,10 +88,11 @@ def s02(t, dur):
     sc.sprite(b["face_pt"], lambda d, x, y, s, col: glow(d, x, y, 0.3 * s, (255, 80, 80), 130), layer=8)
     # right: baby lifting its crib
     k = key(t, 0.25)
-    lift = 0.35 + 0.5 * k + 0.04 * math.sin(t * 20)
-    c = character(sc, BABY, (1.7, 0, 0.1), face="effort", pose=dict(al=(180, -8), ar=(180, -8)), layer=7)
-    M = T(1.7, lift - 0.62, 0.1) @ RZ(5 * math.sin(t * 9))
-    sets.crib(sc, M, layer=6)
+    c = character(sc, BABY, (1.2, 0, 1.3), face="effort", pose=dict(al=(178, -4), ar=(178, -4)), layer=7)
+    top = c["head_top"][1] + 0.02
+    lift = lerp(-0.45, top - 0.7, clamp(k)) + 0.03 * math.sin(t * 20)
+    M = T(1.2, lift, 1.3) @ RZ(4 * math.sin(t * 9)) @ RY(-10)
+    sets.crib(sc, M, layer=6, legs=False)
     sets.crib_front(sc, M, layer=6)
     return sc
 
@@ -132,7 +136,7 @@ def s05(t, dur):
     b = character(sc, BRAX, (0, 0, 0), face="grit" if t < 0.55 else "grin",
                   pose=dict(al=(arm, -10), ar=(arm, -10), ll=-8, lr=8, roll=wob * 0.3))
     mid = (b["hand_l"] + b["hand_r"]) / 2
-    sets.bench(sc, T(mid[0], mid[1] - 0.75 + 0.42 * clamp(k), mid[2]) @ RZ(wob) @ RY(8), layer=6)
+    sets.bench(sc, T(mid[0], mid[1] - 0.5, mid[2]) @ RZ(wob) @ RY(8), layer=6)
     return sc
 
 
