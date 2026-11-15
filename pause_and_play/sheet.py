@@ -8,12 +8,12 @@ from cast import BRAX, DAD, HERO, MAYOR, PIP, TUCK, character
 from engine import Scene, font
 
 ROWS = [
-    (HERO, ["smirk", "shock", "grit", "sparkle"], "HERO", "yellow bucket hat with pause pin, clock hoodie"),
-    (PIP, ["smile", "smug", "chew0", "sparkle"], "PIP", "little sister, age 4, overalls"),
-    (TUCK, ["grin", "shock", "grit", "sparkle"], "TUCK", "flying, goggles + cape"),
-    (BRAX, ["laugh", "shock", "grit", "smirk"], "BRAX", "super strength, shades"),
-    (DAD, ["smile", "shock", "miserable", "sparkle"], "DAD", "talks to pigeons"),
-    (MAYOR, ["smile", "shock", "grit", "sleep"], "MAYOR BIGSBY", "top hat, sash, weighs a LOT"),
+    (HERO, ["sparkle", "shock", "grit", "smirk"], "HERO", "frog bucket hat, frog tee"),
+    (PIP, ["joy", "smug", "chew0", "shock"], "PIP", "little sister, age 4, overalls"),
+    (TUCK, ["grin", "shock", "grit", "sparkle"], "TUCK", "flying, headphones"),
+    (BRAX, ["laugh", "shock", "grit", "smirk"], "BRAX", "super strength, silver hair, shades"),
+    (DAD, ["smile", "shock", "miserable", "angry"], "DAD", "talks to pigeons, beanie + beard"),
+    (MAYOR, ["joy", "shock", "grit", "sleep"], "MAYOR BIGSBY", "top hat, suit, gold chain, weighs a LOT"),
 ]
 BG = ((255, 244, 214), (255, 226, 180))
 
@@ -41,7 +41,7 @@ def main(out):
     img = Image.new("RGB", (W, top + rowh * len(ROWS) + 30), (255, 248, 232))
     d = ImageDraw.Draw(img)
     d.text((W // 2, 62), "PAUSE & PLAY  —  CHARACTER SHEET", font=font(64), fill=(40, 28, 48), anchor="mm")
-    d.text((W // 2, 118), "original blocky toy cast  ·  4 swap-in faces each", font=font(26), fill=(150, 110, 90),
+    d.text((W // 2, 118), "cast  ·  4 swap-in faces each", font=font(26), fill=(150, 110, 90),
            anchor="mm")
     for r, (spec, exprs, name, note) in enumerate(ROWS):
         y = top + r * rowh

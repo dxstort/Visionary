@@ -32,6 +32,7 @@ EXPR = {
     "chew0": ("happy", "happy", None, "chew0"),
     "chew1": ("happy", "happy", None, "chew1"),
     "worried": ("dot", "dot", "sad", "wobble"),
+    "joy": ("happy", "happy", None, "grin"),
     "fade": ("dot", "dot", "sad", "flat"),
 }
 
@@ -143,9 +144,9 @@ def face_decal(expr, spec, extra=None):
             D.line([(-0.82, 0.2), (0.82, 0.2)], (24, 22, 30), 0.07)
             D.poly([(-0.6, 0.14), (-0.42, 0.14), (-0.56, -0.02)], (120, 120, 140))
             D.poly([(0.24, 0.14), (0.42, 0.14), (0.28, -0.02)], (120, 120, 140))
-        if spec.get("stache"):
+        if spec.get("stache") and not spec.get("stache_big"):
             c = spec["stache"]
-            if spec.get("stache_big"):
+            if False:
                 D.poly([(0, -0.26), (-0.22, -0.2), (-0.5, -0.26), (-0.74, -0.2), (-0.86, -0.04), (-0.8, -0.3),
                         (-0.56, -0.44), (-0.24, -0.4), (0, -0.34), (0.24, -0.4), (0.56, -0.44), (0.8, -0.3),
                         (0.86, -0.04), (0.74, -0.2), (0.5, -0.26), (0.22, -0.2)], c)
@@ -177,25 +178,28 @@ def _spec(**kw):
     return base
 
 
-HERO = _spec(name="Hero", style="bucket", shirt=(76, 162, 236), pants=(48, 60, 104), shoes=(244, 244, 244),
-             hair=(66, 44, 32), hat=(255, 204, 64), accent=(255, 214, 80), hoodie=True)
+HERO = _spec(name="Hero", style="frog", skin=(246, 224, 192), shirt=(226, 246, 234), arm_shirt=(132, 222, 182),
+             pants=(52, 62, 96), shoes=(240, 240, 240), hair=(108, 72, 46), hat=(126, 218, 160), frogtee=True,
+             sleeve=0.5)
 PIP = _spec(name="Pip", style="pigtails", s=0.6, head=(0.98, 0.92, 0.98), torso=(1.0, 0.86, 0.52), arm=(0.48, 0.86),
-            leg=(0.5, 0.72), shirt=(255, 246, 236), stripe=(170, 120, 240), pants=(255, 130, 170),
-            shoes=(255, 255, 255), hair=(250, 204, 104), blush=True, accent=(240, 60, 90), overalls=(255, 130, 170))
-TUCK = _spec(name="Tuck", style="spiky", s=0.98, shirt=(255, 132, 46), pants=(46, 56, 96), shoes=(255, 214, 70),
-             hair=(36, 30, 40), skin=(214, 156, 118), accent=(255, 214, 70), cape=(255, 214, 70), goggles=True)
-BRAX = _spec(name="Brax", style="spiky", s=1.14, torso=(1.16, 1.0, 0.56), arm=(0.56, 1.0), leg=(0.56, 0.98),
-             shirt=(212, 46, 58), pants=(40, 40, 50), shoes=(245, 245, 245), hair=(232, 120, 48),
-             skin=(250, 204, 164), accent=(250, 250, 250), shades=True, jersey=True, sleeve=0.4)
-DAD = _spec(name="Dad", style="side", s=1.3, shirt=(246, 246, 240), vest=(78, 150, 98), pants=(176, 150, 110),
-            shoes=(84, 58, 42), hair=(104, 66, 40), glasses=True, stache=(104, 66, 40), tie=(226, 66, 62))
+            leg=(0.5, 0.72), skin=(246, 224, 192), shirt=(190, 70, 44),
+            stripes=[(190, 70, 44), (236, 140, 60), (248, 212, 120), (120, 56, 40)], pants=(78, 104, 150),
+            shoes=(240, 240, 240), hair=(250, 226, 172), accent=(255, 170, 196), overalls=(78, 104, 150))
+TUCK = _spec(name="Tuck", style="messy", s=0.98, skin=(150, 100, 70), shirt=(240, 112, 40), pants=(46, 50, 70),
+             shoes=(240, 240, 240), hair=(26, 22, 28), headphones=True, sleeve=0.5)
+BRAX = _spec(name="Brax", style="silver", s=1.14, torso=(1.16, 1.0, 0.56), arm=(0.56, 1.0), leg=(0.56, 0.98),
+             skin=(246, 224, 192), shirt=(66, 50, 206), pants=(36, 36, 46), shoes=(245, 245, 245),
+             hair=(222, 214, 196), shades=True, hoodie2=True, sleeve=0.86)
+DAD = _spec(name="Dad", style="beanie", s=1.3, skin=(246, 224, 192), shirt=(92, 120, 80), pants=(58, 60, 72),
+            shoes=(60, 46, 40), hair=(176, 92, 52), beard=(176, 92, 52), floral=True, sleeve=0.5,
+            hat=(36, 36, 44))
 MAYOR = _spec(name="Mayor Bigsby", style="tophat", s=1.28, head=(0.8, 0.72, 0.8), torso=(1.56, 1.16, 0.86),
-              arm=(0.52, 1.02), leg=(0.56, 0.78), shirt=(118, 62, 176), pants=(58, 40, 96), shoes=(34, 30, 40),
-              hair=(236, 236, 240), skin=(248, 194, 164), stache=(244, 244, 248), stache_big=True,
-              sash=(255, 200, 60), belly=True)
+              arm=(0.52, 1.02), leg=(0.56, 0.78), shirt=(30, 30, 36), pants=(30, 30, 36), shoes=(20, 20, 24),
+              hair=(240, 236, 228), skin=(246, 224, 192), stache=(244, 240, 232), stache_big=True, suit=True,
+              belly=True)
 BABY = _spec(name="Baby", style="curl", s=0.42, head=(1.1, 1.0, 1.1), torso=(1.0, 0.82, 0.62), arm=(0.46, 0.7),
-             leg=(0.5, 0.52), shirt=(255, 255, 255), pants=(255, 255, 255), shoes=(250, 204, 164), sleeve=0.3,
-             blush=True, hair=(110, 70, 44))
+             leg=(0.5, 0.52), shirt=(255, 255, 255), pants=(255, 255, 255), shoes=(246, 224, 192), sleeve=0.3,
+             blush=True, hair=(110, 70, 44), skin=(246, 224, 192))
 NURSE = _spec(name="Nurse", style="nurse", s=1.28, shirt=(70, 196, 182), pants=(70, 196, 182), shoes=(255, 255, 255),
               hair=(66, 42, 34), skin=(214, 156, 118), sleeve=0.45)
 
@@ -216,7 +220,39 @@ def _torso_decal(spec):
     st = spec["style"]
 
     def decal(D):
-        if spec.get("hoodie"):
+        if spec.get("frogtee"):
+            D.arc(0, 0.92, 0.3, 0.2, 180, 360, spec["arm_shirt"], 0.07)
+            for sx in (-1, 1):
+                D.poly([(sx * 1, 1), (sx * 0.56, 1), (sx * 1, 0.4)], spec["arm_shirt"])
+            D.ell(-0.16, 0.36, 0.11, 0.1, (96, 190, 100), n=14)
+            D.ell(0.16, 0.36, 0.11, 0.1, (96, 190, 100), n=14)
+            D.ell(0, 0.18, 0.3, 0.2, (96, 190, 100), n=20)
+            for sx in (-1, 1):
+                D.ell(sx * 0.16, 0.38, 0.06, 0.06, (255, 255, 255), n=10)
+                D.ell(sx * 0.16, 0.37, 0.03, 0.035, (30, 30, 30), n=8)
+                D.ell(sx * 0.2, 0.14, 0.035, 0.025, (255, 150, 160), n=8)
+            D.arc(0, 0.2, 0.1, 0.06, 200, 340, (30, 60, 30), 0.03)
+        elif spec.get("floral"):
+            rnd = np.random.RandomState(7)
+            D.rect(-1, -1, 1, 1, spec["shirt"])
+            for _ in range(70):
+                u, v = rnd.uniform(-1, 1, 2)
+                c = [(60, 90, 50), (140, 120, 70), (200, 90, 110), (230, 200, 120), (40, 70, 60)][rnd.randint(5)]
+                D.ell(u, v, rnd.uniform(0.06, 0.16), rnd.uniform(0.05, 0.12), c, n=8, rot=rnd.uniform(0, 180))
+            D.poly([(-0.32, 1), (0, 0.62), (0.32, 1)], spec["skin"])
+        elif spec.get("suit"):
+            D.poly([(-0.36, 1), (0.36, 1), (0.12, -0.2), (-0.12, -0.2)], (250, 250, 250))
+            D.poly([(-0.08, 0.86), (0.08, 0.86), (0.11, 0.0), (0, -0.16), (-0.11, 0.0)], (200, 30, 40))
+            for sx in (-1, 1):
+                D.poly([(sx * 0.36, 1), (sx * 0.12, -0.2), (sx * 0.3, 0.3), (sx * 0.5, 1)], (16, 16, 20))
+            D.arc(-0.42, 0.1, 0.4, 0.3, 200, 340, (240, 196, 60), 0.035)
+            D.ell(-0.8, 0.08, 0.06, 0.06, (240, 196, 60), n=10)
+        elif spec.get("hoodie2"):
+            D.arc(0, 0.92, 0.36, 0.26, 180, 360, tuple(v * 0.75 for v in spec["shirt"]), 0.08)
+            D.rect(-0.6, -0.85, 0.6, -0.3, tuple(v * 0.88 for v in spec["shirt"]))
+            for sx in (-1, 1):
+                D.line([(sx * 0.16, 0.8), (sx * 0.18, 0.3)], (230, 230, 240), 0.03)
+        elif spec.get("hoodie"):
             D.rect(-0.62, -0.9, 0.62, -0.32, tuple(v * 0.9 for v in spec["shirt"]))
             D.line([(-0.62, -0.32), (0.62, -0.32)], tuple(v * 0.75 for v in spec["shirt"]), 0.03)
             for sx in (-1, 1):
@@ -228,16 +264,18 @@ def _torso_decal(spec):
             D.line([(0.0, 0.08), (0.11, 0.02)], (60, 56, 70), 0.04)
             D.arc(0, 0.86, 0.36, 0.24, 180, 360, tuple(v * 0.8 for v in spec["shirt"]), 0.05)
         elif spec.get("overalls"):
-            for k in range(-5, 6):
-                D.rect(-1, k * 0.2 - 0.05, 1, k * 0.2 + 0.05, spec["stripe"])
+            st_ = spec["stripes"]
+            for k in range(-10, 10):
+                D.rect(-1, k * 0.1, 1, k * 0.1 + 0.1, st_[k % len(st_)])
             o = spec["overalls"]
             D.rect(-0.62, -1, 0.62, 0.15, o)
             D.rect(-1, -1, 1, -0.55, o)
             for sx in (-1, 1):
                 D.poly([(sx * 0.62, 0.15), (sx * 0.4, 0.15), (sx * 0.58, 1), (sx * 0.8, 1)], o)
                 D.ell(sx * 0.48, 0.05, 0.07, 0.07, (255, 220, 90), n=10)
-            D.rect(-0.26, -0.45, 0.26, -0.12, tuple(v * 0.9 for v in o))
-            D.text(0, -0.28, "♥", (255, 255, 255), h=0.14)
+            D.rect(-0.3, -0.5, 0.3, -0.1, tuple(v * 0.9 for v in o))
+            D.line([(-0.3, -0.1), (0.3, -0.1), (0.3, -0.5), (-0.3, -0.5), (-0.3, -0.1)], (200, 170, 110), 0.02)
+            D.line([(-0.62, 0.12), (0.62, 0.12)], (200, 170, 110), 0.02)
         elif spec.get("jersey"):
             D.rect(-1, 0.55, 1, 0.68, spec["accent"])
             D.rect(-1, -0.95, 1, -0.85, spec["accent"])
@@ -281,8 +319,17 @@ def _torso_decal(spec):
 def _arm_decal(spec):
     if spec.get("overalls"):
         def decal(D):
-            for k in range(-5, 6):
-                D.rect(-1, k * 0.2 - 0.05, 1, k * 0.2 + 0.05, spec["stripe"])
+            st_ = spec["stripes"]
+            for k in range(-10, 10):
+                D.rect(-1, k * 0.1, 1, k * 0.1 + 0.1, st_[k % len(st_)])
+        return decal
+    if spec.get("floral"):
+        def decal(D):
+            rnd = np.random.RandomState(3)
+            for _ in range(25):
+                u, v = rnd.uniform(-1, 1, 2)
+                c = [(60, 90, 50), (140, 120, 70), (200, 90, 110), (230, 200, 120)][rnd.randint(4)]
+                D.ell(u, v, 0.2, 0.08, c, n=8, rot=rnd.uniform(0, 180))
         return decal
     if spec.get("hoodie"):
         return lambda D: D.rect(-1, -1, 1, -0.86, tuple(v * 0.8 for v in spec["shirt"]))
@@ -356,6 +403,7 @@ def character(sc, spec, pos=(0, 0, 0), yaw=0, face="smile", pose=None, live=Fals
         J = body @ T(sx * (tw / 2 + aw / 2), ll + th - aw / 2, 0) @ RZ(sx * roll) @ RX(-pitch)
         top = aw / 2
         sl = al * spec["sleeve"]
+        shirt = spec.get("arm_shirt", spec["shirt"])
         bend = p.get(ek, 0)
         if abs(bend) < 1:
             B(J @ T(0, top - sl / 2, 0), (aw, sl, aw), shirt, decal=adec)
@@ -428,6 +476,56 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
             u = -spread + 2 * spread * i / max(1, n - 1)
             spike(u * 0.9, y, math.cos(u * 0.9) * 0.92, u * 0.25, -0.9, 0.4, length, 0.22, c, bias=-0.05)
 
+    if spec.get("beard"):
+        bc = spec["beard"]
+        blob(T(0, -hh * 0.32, rz * 0.62), (hw * 1.0, hh * 0.56, hd * 0.62), bc, e=0.7, bias=-0.2, n=16, m=8)
+        blob(T(0, -hh * 0.05, rz * 0.9), (hw * 0.62, hh * 0.16, 0.2 * s), bc, e=0.6, bias=-0.3, n=12, m=6)
+        for sx in (-1, 1):
+            blob(T(sx * rx * 0.92, hh * 0.02, 0.0), (0.16 * s, hh * 0.6, hd * 0.6), bc, e=0.6, bias=-0.1, n=10, m=6)
+    if spec.get("headphones"):
+        grey = (200, 204, 212)
+        for sx in (-1, 1):
+            blob(T(sx * (rx + 0.06 * s), 0.0, 0.0) @ RZ(90), (0.36 * s, 0.14 * s, 0.36 * s), grey, e=0.5, bias=-0.2,
+                 n=14, m=4)
+        for k in range(9):
+            a = math.pi * k / 8
+            blob(T(math.cos(a) * (rx + 0.08 * s), hh * 0.5 + math.sin(a) * 0.22 * s, -0.02 * s),
+                 (0.11 * s, 0.11 * s, 0.11 * s), (90, 92, 104), e=0.8, bias=-0.4, n=8, m=4)
+    if spec.get("stache_big"):
+        wc = spec["stache"]
+        for sx in (-1, 1):
+            blob(T(sx * 0.15 * s, -hh * 0.2, rz + 0.04 * s) @ RZ(sx * -14), (0.3 * s, 0.13 * s, 0.12 * s), wc, e=0.8,
+                 bias=-0.5, n=12, m=6)
+            blob(T(sx * 0.3 * s, -hh * 0.14, rz + 0.0 * s) @ RZ(sx * 40), (0.14 * s, 0.08 * s, 0.1 * s), wc, e=0.8,
+                 bias=-0.5, n=10, m=5)
+    if st in ("messy", "silver"):
+        st = "spiky"
+    if st == "frog":
+        back(0.62, 0.05)
+        for i in range(7):
+            a = -1.2 + i * 0.4
+            spike(math.sin(a) * 1.0, 0.55, math.cos(a) * 1.0, math.sin(a) * 0.7, -0.6, math.cos(a) * 0.7, 0.13, 0.2,
+                  bias=-0.05)
+        hat = spec["hat"]
+        dk = tuple(v * 0.85 for v in hat)
+        blob(T(0, hh * 0.56, -0.01 * s), (hw * 1.1, hh * 0.52, hd * 1.1), hat, e=0.45, bias=-0.35, n=24, m=8)
+        blob(T(0, hh * 0.3, 0.01 * s) @ RX(-4), (hw * 1.5, 0.1 * s, hd * 1.5), dk, e=0.7, bias=-0.45, n=24, m=5)
+        for sx in (-1, 1):
+            ex, ey, ez = sx * 0.2 * s, hh * 0.84, 0.16 * s
+            blob(T(ex, ey, ez), (0.24 * s, 0.22 * s, 0.22 * s), hat, e=0.9, bias=-0.6, n=12, m=8)
+            blob(T(ex, ey + 0.02 * s, ez + 0.08 * s), (0.15 * s, 0.15 * s, 0.1 * s), (255, 255, 255), e=0.9,
+                 bias=-0.7, n=10, m=6)
+            blob(T(ex, ey + 0.02 * s, ez + 0.12 * s), (0.08 * s, 0.09 * s, 0.05 * s), (24, 24, 28), e=0.9,
+                 bias=-0.8, n=8, m=6)
+        return 0.62
+    if st == "beanie":
+        hat = spec["hat"]
+        blob(T(0, hh * 0.58, -0.02 * s), (hw * 1.12, hh * 0.66, hd * 1.12), hat, e=0.6, bias=-0.35, n=24, m=8)
+        blob(T(0, hh * 0.38, 0), (hw * 1.16, hh * 0.17, hd * 1.16), tuple(v * 0.8 for v in hat), e=0.3, bias=-0.4,
+             n=24, m=4)
+        blob(T(0, hh * 0.4, rz + 0.06 * s), (0.24 * s, 0.07 * s, 0.03 * s), (235, 235, 240), e=0.4, bias=-0.6,
+             n=8, m=4)
+        return 0.4
     if st == "bucket":
         back(0.62, 0.05)
         for i in range(7):
@@ -478,8 +576,8 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
                  e=0.8, bias=0.0, n=10, m=6)
             for k in range(2):
                 spike(sx * 1.25, -0.5 - k * 0.3, 0.0, sx * 0.3, -1, 0.0, 0.18, 0.18, bias=-0.01)
-            blob(T(sx * (rx + 0.04 * s), hh * 0.24, -0.02 * s), (0.18 * s, 0.14 * s, 0.22 * s), spec["accent"],
-                 e=0.6, bias=-0.25, n=8, m=4)
+            _spike(sc, Mh, (sx * rx * 0.55, hh * 0.62, 0.0), (sx * 0.3, 1.0, 0.0), 0.2 * s, 0.22 * s,
+                   spec["accent"], layer, live)
         return 0.28
     if st == "side":
         back(0.6, 0.1)

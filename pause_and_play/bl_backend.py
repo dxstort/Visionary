@@ -440,6 +440,13 @@ class BScene(engine.Scene):
 
     def _camera(self):
         W = world()
+        if (self.outW, self.outH) == (1080, 1920):
+            rx, ry = RENDER_W, RENDER_H
+        else:
+            k = min(1.5, 900 / max(self.outW, self.outH))
+            rx, ry = int(self.outW * k), int(self.outH * k)
+        if (W.scene.render.resolution_x, W.scene.render.resolution_y) != (rx, ry):
+            W.scene.render.resolution_x, W.scene.render.resolution_y = rx, ry
         R = np.eye(4)
         R[:3, 0] = C3 @ self.r
         R[:3, 1] = C3 @ self.u
