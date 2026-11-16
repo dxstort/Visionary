@@ -1,5 +1,6 @@
 """Shot list. Each shot: (number, seconds, narration, fn(t, dur) -> Scene)."""
 import math
+import os
 
 import numpy as np
 
@@ -1156,3 +1157,14 @@ SHOTS = [
     (64, 1.2, "She won first place.", s64),
     (65, 1.8, "Now I do HER homework.", s65),
 ]
+
+
+# Narration timing: when voice_timing.json exists (built from the recorded voiceover),
+# each shot takes its duration from the voice and captions use the spoken word onsets.
+WORD_TIMES = {}
+_vt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_timing.json")
+if os.path.exists(_vt):
+    import json as _json
+    _timing = {int(k): v for k, v in _json.load(open(_vt)).items()}
+    SHOTS = [(n, _timing[n]["dur"], txt, fn) if n in _timing else (n, d, txt, fn) for n, d, txt, fn in SHOTS]
+    WORD_TIMES = {n: [(t, w) for t, w in v["words"]] for n, v in _timing.items()}

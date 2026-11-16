@@ -14,7 +14,7 @@ from multiprocessing import Pool
 from PIL import Image
 
 from engine import draw_caption
-from shots import SHOTS
+from shots import SHOTS, WORD_TIMES
 
 FPS = 30
 
@@ -49,7 +49,7 @@ def render_frame(si, f, captions=True):
     img = fn(t, dur).render()
     if captions:
         cur = None
-        for st, word in word_times(text, dur):
+        for st, word in WORD_TIMES.get(num) or word_times(text, dur):
             if st <= t + 1e-6:
                 cur = (st, word)
         if cur:

@@ -361,8 +361,8 @@ def main():
         sfx[o:o + len(snd)] += g * snd[: n - o]
 
     # levels: voice reference at 0 dB; music ~11 dB under it, effects ~5 dB under it
-    music *= db(-11) / max(1e-6, np.sqrt(np.mean(bed ** 2)) / 0.2)
-    sfx *= db(-5)
+    music *= db(-13 if a.voice else -11) / max(1e-6, np.sqrt(np.mean(bed ** 2)) / 0.2)
+    sfx *= db(-6 if a.voice else -5)
     mix = music + sfx
     tail = int(0.02 * SR)
     mix[-tail:] = 0.0  # hard cut to silence at the end
