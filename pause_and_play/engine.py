@@ -260,7 +260,7 @@ class WrapDecal(Decal):
 
 class Scene:
     def __init__(self, cam, tgt, fov=40, W=1080, H=1920, sky=((120, 190, 255), (215, 238, 255)),
-                 grade=None, gmix=1.0, cy=0.38, roll=0.0, fog=None, post=True, dof=None):
+                 grade=None, gmix=1.0, cy=0.38, roll=0.0, fog=None, post=True, dof=None, night=0.0):
         self.W, self.H = W * SS, H * SS
         self.outW, self.outH = W, H
         self.cam = np.asarray(cam, float)
@@ -287,6 +287,9 @@ class Scene:
         self.fog = fog
         self.post = post
         self.dof = dof  # (focus distance, blur px): everything farther than ~1.3x focus is drawn soft
+        self.night = night  # 0 = day sun, 1 = moonlight (Blender backend)
+        self.bloom = 0.0    # extra glow round bright pixels (Blender backend), e.g. 1.0 for night lamps
+        self.lights = []    # point lights: (pos, colour, watts, radius, shadow) (Blender backend)
         self.Rc = np.stack([self.r, self.u, self.f]).T
 
     # -- colour / projection helpers
@@ -417,7 +420,7 @@ class Scene:
 
         self.items.append((layer, -depth, len(self.items), draw))
 
-    def solid(self, M, verts, faces, color, layer=2, live=False, bias=0.0):
+    def solid(self, M, verts, faces, color, layer=2, live=False, bias=0.0, lit=True):
         """Convex solid from local verts and faces (index lists, CCW from outside)."""
         Wv = np.asarray(verts, float) @ M[:3, :3].T + M[:3, 3]
         ctr = Wv.mean(axis=0)
@@ -484,6 +487,10 @@ class Scene:
             fn(d, x, y, self.fl / z, lambda c: self.col(c, live))
 
         self.items.append((layer, -depth, len(self.items), draw))
+
+    def light(self, pos, color=(255, 214, 140), energy=60.0, radius=0.12, shadow=False):
+        """Point light (lamps, windows). Only the Blender backend renders real light; glows are separate sprites."""
+        self.lights.append((np.asarray(pos, float), color, float(energy), float(radius), shadow))
 
     def overlay(self, fn):
         """fn(draw, W, H) in supersampled px, drawn after the 3D pass."""

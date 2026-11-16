@@ -13,7 +13,7 @@ import time
 import bl_backend  # noqa: F401  (patches engine.Scene before shots is imported)
 import render
 from render import FPS, render_frame, timeline
-from shots import SHOTS
+from story import SHOTS
 
 
 def main():

@@ -16,7 +16,7 @@ import wave
 import numpy as np
 
 from render import FPS
-from shots import SHOTS
+from story import SHOTS, out_name
 
 SR = 48000
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -334,6 +334,9 @@ def loudnorm_filter(raw, voice=None):
             f":measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
 
 
+MUSIC_DB_VOICE = -13  # music level (re. the voice reference) when narration is mixed in
+
+
 def db(x):
     return 10 ** (x / 20)
 
@@ -361,14 +364,14 @@ def main():
         sfx[o:o + len(snd)] += g * snd[: n - o]
 
     # levels: voice reference at 0 dB; music ~11 dB under it, effects ~5 dB under it
-    music *= db(-13 if a.voice else -11) / max(1e-6, np.sqrt(np.mean(bed ** 2)) / 0.2)
+    music *= db(MUSIC_DB_VOICE if a.voice else -11) / max(1e-6, np.sqrt(np.mean(bed ** 2)) / 0.2)
     sfx *= db(-6 if a.voice else -5)
     mix = music + sfx
     tail = int(0.02 * SR)
     mix[-tail:] = 0.0  # hard cut to silence at the end
-    write_wav(os.path.join(OUT, "music.wav"), music)
-    write_wav(os.path.join(OUT, "sfx.wav"), sfx)
-    raw = os.path.join(OUT, "_mix_raw.wav")
+    write_wav(out_name("music.wav"), music)
+    write_wav(out_name("sfx.wav"), sfx)
+    raw = out_name("_mix_raw.wav")
     write_wav(raw, mix / max(1.0, np.abs(mix).max()))
     filt = loudnorm_filter(raw, a.voice)
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-i", raw]
@@ -377,10 +380,10 @@ def main():
                f"[0:a]aformat=sample_rates={SR}:channel_layouts=stereo[v];[v][1:a]amix=inputs=2:normalize=0,{filt}"]
     else:
         cmd += ["-af", filt]
-    cmd += ["-ar", str(SR), os.path.join(OUT, "mix.wav")]
+    cmd += ["-ar", str(SR), out_name("mix.wav")]
     subprocess.run(cmd, check=True)
     os.remove(raw)
-    print(f"wrote out/music.wav, out/sfx.wav, out/mix.wav ({TOTAL:.2f} s, {len(cues())} effects)")
+    print(f"wrote {out_name('music.wav')}, sfx.wav, mix.wav ({TOTAL:.2f} s, {len(cues())} effects)")
 
 
 if __name__ == "__main__":

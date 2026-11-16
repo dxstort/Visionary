@@ -94,6 +94,7 @@ class _World:
         R = np.eye(4)
         R[:3, 0], R[:3, 1], R[:3, 2] = x, y, z
         self.sun.matrix_world = Matrix(R.tolist())
+        self.sun_day = self.sun.matrix_world.copy()
 
         # sky: gradient for camera rays, flat bluish ambient for lighting
         w = bpy.data.worlds.new("sky")
@@ -116,7 +117,36 @@ class _World:
         nt.links.new(tc.outputs["Generated"], sep.inputs[0])
         nt.links.new(sep.outputs["Z"], mr.inputs["Value"])
         nt.links.new(mr.outputs["Result"], mix.inputs["Factor"])
-        nt.links.new(mix.outputs[2], bg_cam.inputs["Color"])
+        # star field for night skies: sparse Voronoi points in view-direction space, scaled by star_k
+        vor = nt.nodes.new("ShaderNodeTexVoronoi")
+        vor.inputs["Scale"].default_value = 120.0
+        nt.links.new(tc.outputs["Generated"], vor.inputs["Vector"])
+        dot = nt.nodes.new("ShaderNodeMapRange")
+        dot.inputs["From Min"].default_value, dot.inputs["From Max"].default_value = 0.0, 0.11
+        dot.inputs["To Min"].default_value, dot.inputs["To Max"].default_value = 1.0, 0.0
+        nt.links.new(vor.outputs["Distance"], dot.inputs["Value"])
+        sepc = nt.nodes.new("ShaderNodeSeparateColor")
+        nt.links.new(vor.outputs["Color"], sepc.inputs[0])
+        thin = nt.nodes.new("ShaderNodeMath")
+        thin.operation = "GREATER_THAN"
+        thin.inputs[1].default_value = 0.93
+        nt.links.new(sepc.outputs[0], thin.inputs[0])
+        st = nt.nodes.new("ShaderNodeMath")
+        st.operation = "MULTIPLY"
+        nt.links.new(dot.outputs["Result"], st.inputs[0])
+        nt.links.new(thin.outputs[0], st.inputs[1])
+        st2 = nt.nodes.new("ShaderNodeMath")
+        st2.operation = "MULTIPLY"
+        st2.inputs[1].default_value = 0.0
+        self.star_k = st2.inputs[1]
+        nt.links.new(st.outputs[0], st2.inputs[0])
+        add = nt.nodes.new("ShaderNodeMix")
+        add.data_type = "RGBA"
+        add.blend_type = "ADD"
+        add.inputs[7].default_value = (1.0, 0.97, 0.85, 1.0)
+        nt.links.new(st2.outputs[0], add.inputs["Factor"])
+        nt.links.new(mix.outputs[2], add.inputs[6])
+        nt.links.new(add.outputs[2], bg_cam.inputs["Color"])
         nt.links.new(lp.outputs["Is Camera Ray"], ms.inputs["Fac"])
         nt.links.new(bg_amb.outputs[0], ms.inputs[1])
         nt.links.new(bg_cam.outputs[0], ms.inputs[2])
@@ -128,6 +158,7 @@ class _World:
         self.decal_mats = {}
         self.meshes = {}
         self.pool = []
+        self.lamp_pool = []
 
     # -- shared materials: per-object colour comes from Object Info -> Color (no recompiles)
     def _material(self, name, emit=False, decal=False):
@@ -208,6 +239,14 @@ class _World:
             me.materials.append(self.mat_base)
             self.meshes[key] = me
         return me
+
+    def lamp(self, i):
+        while len(self.lamp_pool) <= i:
+            ld = bpy.data.lights.new(f"pt{len(self.lamp_pool)}", "POINT")
+            o = bpy.data.objects.new(f"pt{len(self.lamp_pool)}", ld)
+            self.scene.collection.objects.link(o)
+            self.lamp_pool.append(o)
+        return self.lamp_pool[i]
 
     def obj(self, i):
         while len(self.pool) <= i:
@@ -358,10 +397,10 @@ class BScene(engine.Scene):
         build = lambda: build_blob(size, e, e2, n, m, uv=uv, span=span, decal_scale=1.08)
         self.prims.append((key, build, np.asarray(M, float), self.col(color, live), lit, decal, 0.04, size))
 
-    def solid(self, M, verts, faces, color, layer=2, live=False, bias=0.0):
+    def solid(self, M, verts, faces, color, layer=2, live=False, bias=0.0, lit=True):
         key = ("solid", _r(verts, 4), tuple(tuple(f) for f in faces))
         build = lambda: build_poly(verts, faces)
-        self.prims.append((key, build, np.asarray(M, float), self.col(color, live), True, None, 0.05, None))
+        self.prims.append((key, build, np.asarray(M, float), self.col(color, live), lit, None, 0.05, None))
 
     def quad(self, pts, color, layer=1, live=False, outline=None, depth_pt=None):
         if len(color) > 3 and color[3] < 255:
@@ -437,6 +476,16 @@ class BScene(engine.Scene):
             o.hide_render = False
         for o in W.pool[len(self.prims):]:
             o.hide_render = True
+        for i, (pos, color, energy, radius, shadow) in enumerate(self.lights):
+            o = W.lamp(i)
+            o.location = tuple(C3 @ pos)
+            o.data.color = lin(color)
+            o.data.energy = energy
+            o.data.shadow_soft_size = radius
+            o.data.use_shadow = bool(shadow)
+            o.hide_render = False
+        for o in W.lamp_pool[len(self.lights):]:
+            o.hide_render = True
 
     def _camera(self):
         W = world()
@@ -469,7 +518,24 @@ class BScene(engine.Scene):
         W.sky_bot.default_value = bot + [1.0]
         amb = [0.55 * top[0] + 0.45 * bot[0], 0.55 * top[1] + 0.45 * bot[1], 0.55 * top[2] + 0.45 * bot[2]]
         W.amb.inputs["Color"].default_value = amb + [1.0]
-        W.amb.inputs["Strength"].default_value = 0.62
+        # night: the sun becomes a dim cool moon and the sky fill drops
+        n = clamp(self.night)
+        W.amb.inputs["Strength"].default_value = 0.62 * (1 - n) + 0.55 * n
+        W.sun.data.energy = 2.7 * (1 - n) + 0.85 * n
+        if n > 0:
+            # night: the moon keys from behind the camera (above, to the left), so faces facing us read
+            src = -self.f * 0.75 + self.u * 0.65 - self.r * 0.4
+            zb = C3 @ (src / np.linalg.norm(src))
+            xb = np.cross([0, 0, 1.0], zb)
+            xb = xb / max(1e-6, np.linalg.norm(xb))
+            yb = np.cross(zb, xb)
+            Rm = np.eye(4)
+            Rm[:3, 0], Rm[:3, 1], Rm[:3, 2] = xb, yb, zb
+            W.sun.matrix_world = Matrix(Rm.tolist())
+        else:
+            W.sun.matrix_world = W.sun_day
+        W.star_k.default_value = 2.5 * max(0.0, n - 0.7) / 0.3
+        W.sun.data.color = tuple((1 - n) * a + n * b for a, b in zip((1.0, 0.95, 0.86), (0.62, 0.72, 1.0)))
 
     def render(self):
         W = world()
@@ -477,6 +543,13 @@ class BScene(engine.Scene):
         self._camera()
         bpy.ops.render.render(write_still=True)
         img = Image.open(W.tmp).convert("RGB").resize((self.outW, self.outH), Image.LANCZOS)
+        if self.bloom > 0:
+            # bloom from the rendered frame itself, so anything in front of a lamp blocks its glow
+            q = (img.size[0] // 4, img.size[1] // 4)
+            bright = img.resize(q, Image.BILINEAR).point(lambda v: max(0, v - 150) * 2.4)
+            for r, k in ((5, 1.0), (16, 0.9)):
+                g = bright.filter(ImageFilter.GaussianBlur(r)).point(lambda v, k=k: min(255, int(v * k * self.bloom)))
+                img = ImageChops.screen(img, g.resize(img.size, Image.BILINEAR))
         # 2D layer: sprites (sparks, glows), emotes and other overlays, drawn supersampled
         ov = Image.new("RGBA", (self.W, self.H), (0, 0, 0, 0))
         d = ImageDraw.Draw(ov, "RGBA")

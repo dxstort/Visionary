@@ -14,7 +14,7 @@ from multiprocessing import Pool
 from PIL import Image
 
 from engine import draw_caption
-from shots import SHOTS, WORD_TIMES
+from story import SHOTS, WORD_TIMES
 
 FPS = 30
 

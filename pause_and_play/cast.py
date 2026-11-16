@@ -133,7 +133,16 @@ def face_decal(expr, spec, extra=None):
             for s in (-1, 1):
                 D.arc(s * 0.42, 0.02, 0.27, 0.3, 0, 360, (60, 60, 80), 0.05, n=20)
             D.line([(-0.15, 0.06), (0.15, 0.06)], (60, 60, 80), 0.05)
-        _brow(D, brow)
+        if spec.get("bushy"):
+            bc = spec["bushy"]
+            tilt = {"angry": -0.12, "sad": 0.1, "raised": 0.0}.get(brow, 0.0)
+            lift = 0.06 if brow == "raised" else 0.0
+            for sgn in (-1, 1):
+                inner, outer = (sgn * 0.16, 0.3 + lift + tilt), (sgn * 0.7, 0.3 + lift - tilt)
+                D.poly([(inner[0], inner[1] - 0.06), (outer[0], outer[1] - 0.04), (outer[0] + sgn * 0.06, outer[1] + 0.1),
+                        (sgn * 0.42, 0.44 + lift), (inner[0], inner[1] + 0.08)], bc)
+        else:
+            _brow(D, brow)
         if expr == "miserable":
             for s in (-1, 1):
                 D.arc(s * 0.42, -0.2, 0.15, 0.06, 200, 340, (150, 110, 120), 0.04)
@@ -202,6 +211,16 @@ BABY = _spec(name="Baby", style="curl", s=0.42, head=(1.1, 1.0, 1.1), torso=(1.0
              blush=True, hair=(110, 70, 44), skin=(246, 224, 192))
 NURSE = _spec(name="Nurse", style="nurse", s=1.28, shirt=(70, 196, 182), pants=(70, 196, 182), shoes=(255, 255, 255),
               hair=(66, 42, 34), skin=(214, 156, 118), sleeve=0.45)
+
+ABERNATHY = _spec(name="Mr Abernathy", style="elder", s=1.24, head=(0.78, 0.74, 0.76), torso=(1.04, 1.0, 0.56),
+                  skin=(240, 206, 178), shirt=(132, 104, 84), inner=(236, 226, 204), cardigan=True,
+                  pants=(96, 98, 108), shoes=(88, 60, 44), hair=(236, 236, 240), bushy=(240, 240, 244),
+                  glasses=True, ears=True, sleeve=0.86)
+ORTIZ = _spec(name="Mrs Ortiz", style="bun", s=1.2, skin=(214, 156, 118), shirt=(150, 90, 170), inner=(250, 240, 220),
+              cardigan=True, pants=(70, 60, 90), shoes=(60, 50, 60), hair=(150, 146, 150), glasses=True,
+              accent=(240, 120, 160), sleeve=0.86)
+MAILMAN = _spec(name="Mailman", style="cap", s=1.26, skin=(176, 118, 86), shirt=(130, 170, 220), uniform=True,
+                pants=(40, 52, 96), shoes=(30, 30, 36), hair=(30, 24, 22), hat=(40, 52, 96), sleeve=0.5)
 
 CROWD_COLORS = [(240, 96, 96), (96, 190, 120), (96, 146, 240), (250, 186, 76), (180, 110, 240), (250, 130, 190),
                 (80, 200, 200), (232, 226, 110)]
@@ -304,6 +323,27 @@ def _torso_decal(spec):
         elif spec.get("cape"):
             D.poly([(-0.46, 0.32), (0, -0.28), (0.46, 0.32), (0.28, 0.32), (0, -0.04), (-0.28, 0.32)], (255, 255, 255))
             D.arc(0, 0.9, 0.3, 0.22, 180, 360, tuple(v * 0.8 for v in spec["shirt"]), 0.05)
+        elif spec.get("cardigan"):
+            D.poly([(-0.42, 1), (0.42, 1), (0.0, -0.2)], spec["inner"])
+            D.poly([(-0.2, 1), (0, 0.78), (0.2, 1)], spec["skin"])
+            D.line([(-0.42, 1), (0.0, -0.2), (0.0, -1)], tuple(v * 0.78 for v in spec["shirt"]), 0.05)
+            D.line([(0.42, 1), (0.0, -0.2)], tuple(v * 0.78 for v in spec["shirt"]), 0.05)
+            for vv in (-0.35, -0.6, -0.85):
+                D.ell(-0.1, vv, 0.045, 0.05, (230, 210, 170), n=8)
+            for sx in (-1, 1):
+                D.rect(sx * 0.62 - 0.2, -0.75, sx * 0.62 + 0.2, -0.45, tuple(v * 0.88 for v in spec["shirt"]))
+            D.rect(-1, -1, 1, -0.88, tuple(v * 0.8 for v in spec["shirt"]))
+        elif spec.get("uniform"):
+            D.poly([(-0.4, 1), (0, 0.6), (0.4, 1)], spec["skin"])
+            for sx in (-1, 1):
+                D.poly([(sx * 0.05, 0.6), (sx * 0.4, 1), (sx * 0.62, 0.88), (sx * 0.2, 0.55)],
+                       tuple(v * 0.86 for v in spec["shirt"]))
+            D.line([(0, 0.6), (0, -1)], tuple(v * 0.8 for v in spec["shirt"]), 0.03)
+            for vv in (0.3, -0.05, -0.4, -0.75):
+                D.ell(0.06, vv, 0.035, 0.04, (250, 250, 250), n=8)
+            D.rect(-0.66, 0.0, -0.26, 0.36, tuple(v * 0.9 for v in spec["shirt"]))
+            D.ell(0.46, 0.22, 0.14, 0.16, (220, 60, 60), n=14)
+            D.poly([(0.38, 0.3), (0.54, 0.3), (0.46, 0.12)], (255, 255, 255))
         elif st == "nurse":
             D.poly([(-0.34, 1), (0, 0.55), (0.34, 1)], spec["skin"])
             D.rect(0.3, 0.1, 0.66, 0.45, tuple(v * 0.88 for v in spec["shirt"]))
@@ -614,6 +654,37 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
         sc.box(Mh @ T(0, hh / 2 + 0.1 * s, 0.1 * s), (hw * 0.66, 0.26 * s, hd * 0.4), (255, 255, 255), layer=layer,
                live=live, bias=-0.55, decal=cross)
         return 0.34
+    if st == "elder":
+        # bald crown with a white horseshoe of hair round the sides and back
+        for sx in (-1, 1):
+            blob(T(sx * rx * 0.97, hh * 0.12, -0.02 * s), (0.2 * s, hh * 0.46, hd * 0.66), hair, e=0.7, bias=-0.05,
+                 n=10, m=6)
+            spike(sx * 1.02, 0.35, 0.25, sx * 0.8, 0.3, 0.2, 0.12, 0.16)
+        blob(T(0, hh * 0.12, -rz * 0.72), (hw * 0.86, hh * 0.46, 0.22 * s), hair, e=0.7, bias=0.05, n=10, m=6)
+        if spec.get("ears"):
+            for sx in (-1, 1):
+                blob(T(sx * (rx + 0.04 * s), -hh * 0.04, 0.04 * s), (0.12 * s, 0.22 * s, 0.14 * s), spec["skin"],
+                     e=0.8, bias=-0.1, n=10, m=6)
+        return 0.02
+    if st == "bun":
+        back(0.95, -0.02)
+        cap(0.46, 0.44)
+        blob(T(0, hh * 0.3, rz * 0.8), (hw * 0.86, hh * 0.18, 0.12 * s), hair, e=0.5, bias=-0.1, n=14, m=4)
+        blob(T(0, hh * 0.68, -rz * 0.45), (0.36 * s, 0.32 * s, 0.36 * s), hair, e=0.8, bias=0.05, n=12, m=8)
+        if spec.get("accent"):
+            blob(T(0, hh * 0.62, -rz * 0.2), (0.4 * s, 0.07 * s, 0.1 * s), spec["accent"], e=0.6, bias=-0.1, n=8,
+                 m=4)
+        return 0.42
+    if st == "cap":
+        back(0.6, 0.05)
+        hat = spec["hat"]
+        blob(T(0, hh * 0.52, -0.02 * s), (hw * 1.1, hh * 0.48, hd * 1.1), hat, e=0.5, bias=-0.35, n=22, m=8,
+             decal=spec.get("cap_decal"), span=1.0)
+        sc.box(Mh @ T(0, hh * 0.36, rz + 0.18 * s) @ RX(-8), (hw * 0.9, 0.05 * s, 0.42 * s), tuple(v * 0.85 for v in hat),
+               layer=layer, live=live, bias=-0.5)
+        for sx in (-1, 1):
+            spike(sx * 1.0, 0.3, -0.1, sx * 0.6, -0.8, -0.1, 0.14, 0.18)
+        return 0.3
     if st == "bob":
         back(1.1, -0.1)
         cap(0.44, 0.44)

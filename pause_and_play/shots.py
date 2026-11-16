@@ -1159,12 +1159,9 @@ SHOTS = [
 ]
 
 
-# Narration timing: when voice_timing.json exists (built from the recorded voiceover),
-# each shot takes its duration from the voice and captions use the spoken word onsets.
-WORD_TIMES = {}
-_vt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "voice_timing.json")
-if os.path.exists(_vt):
-    import json as _json
-    _timing = {int(k): v for k, v in _json.load(open(_vt)).items()}
-    SHOTS = [(n, _timing[n]["dur"], txt, fn) if n in _timing else (n, d, txt, fn) for n, d, txt, fn in SHOTS]
-    WORD_TIMES = {n: [(t, w) for t, w in v["words"]] for n, v in _timing.items()}
+# Narration timing: voice_timing.json (built by voice_align.py from the recorded voiceover) sets each
+# shot's duration and the spoken word onsets used for captions.
+TIMING_FILE = "voice_timing.json"
+from story import load_timing  # noqa: E402
+
+SHOTS, WORD_TIMES = load_timing(SHOTS, TIMING_FILE)
