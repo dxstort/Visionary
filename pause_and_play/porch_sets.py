@@ -93,7 +93,7 @@ def window(sc, M, k, w=0.85, h=1.0, color=None, curtains=(150, 70, 70), open_k=0
 
 
 def porch_house(sc, x, z, color, k=1.0, yaw=0, roof=None, old=False, lamp_k=None, party=0.0, win_open=0.0,
-                win_k=None, glow_r=0.55, lamp_watts=None, shadow=False):
+                win_k=None, glow_r=0.55, lamp_watts=None, shadow=False, glass=None):
     """House with a covered porch, porch lamp and two front windows. Returns anchors (lamp, sills, door)."""
     w, h, d = HOUSE_W, HOUSE_H, HOUSE_D
     roof = roof or tuple(int(v * 0.5 + 20) for v in color)
@@ -133,7 +133,7 @@ def porch_house(sc, x, z, color, k=1.0, yaw=0, roof=None, old=False, lamp_k=None
     sills = []
     for sx in (-1, 1):
         sills.append(window(sc, M @ T(sx * 1.6, 2.15, d / 2 + 0.02), win_k, open_k=win_open if sx > 0 else 0.0,
-                            curtains=(150, 70, 70) if not old else (90, 84, 90)))
+                            curtains=(150, 70, 70) if not old else (90, 84, 90), color=glass))
     if party > 0:
         rng = np.random.RandomState(int(abs(x) * 3 + 1))
         cols = [(255, 90, 120), (90, 200, 255), (255, 220, 80), (150, 230, 120), (210, 120, 255)]

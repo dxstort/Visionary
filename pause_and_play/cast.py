@@ -222,6 +222,15 @@ ORTIZ = _spec(name="Mrs Ortiz", style="bun", s=1.2, skin=(214, 156, 118), shirt=
 MAILMAN = _spec(name="Mailman", style="cap", s=1.26, skin=(176, 118, 86), shirt=(130, 170, 220), uniform=True,
                 pants=(40, 52, 96), shoes=(30, 30, 36), hair=(30, 24, 22), hat=(40, 52, 96), sleeve=0.5)
 
+GUS = _spec(name="Grandpa Gus", style="elder", s=1.3, head=(0.8, 0.74, 0.78), torso=(1.1, 1.0, 0.58),
+            skin=(236, 198, 168), shirt=(170, 62, 52), flannel=True, suspenders=(66, 50, 40), pants=(70, 74, 92),
+            shoes=(96, 100, 112), boots=1.6, strap=(56, 52, 50), hair=(232, 232, 236), bushy=(236, 236, 240),
+            stache=(236, 236, 240), ears=True, sleeve=0.86)
+MOM = _spec(name="Mom", style="bob", s=1.24, skin=(246, 224, 192), shirt=(110, 176, 222), pants=(70, 80, 110),
+            shoes=(96, 100, 112), boots=1.0, hair=(120, 74, 44), sleeve=0.5)
+UNCLE_RAY = _spec(name="Uncle Ray", style="beanie", s=1.26, skin=(246, 224, 192), shirt=(244, 160, 60), pants=(60, 70, 96),
+                  shoes=(60, 46, 40), hair=(176, 92, 52), beard=(176, 92, 52), hat=(214, 70, 64), sleeve=0.5)
+
 CROWD_COLORS = [(240, 96, 96), (96, 190, 120), (96, 146, 240), (250, 186, 76), (180, 110, 240), (250, 130, 190),
                 (80, 200, 200), (232, 226, 110)]
 CROWD_SKIN = [(250, 204, 164), (214, 156, 118), (176, 118, 86), (236, 178, 140), (130, 88, 66)]
@@ -323,6 +332,17 @@ def _torso_decal(spec):
         elif spec.get("cape"):
             D.poly([(-0.46, 0.32), (0, -0.28), (0.46, 0.32), (0.28, 0.32), (0, -0.04), (-0.28, 0.32)], (255, 255, 255))
             D.arc(0, 0.9, 0.3, 0.22, 180, 360, tuple(v * 0.8 for v in spec["shirt"]), 0.05)
+        elif spec.get("flannel"):
+            dk = tuple(v * 0.62 for v in spec["shirt"])
+            lt = tuple(min(255, v * 1.25) for v in spec["shirt"])
+            for k in range(-5, 6):
+                D.rect(k * 0.2 - 0.04, -1, k * 0.2 + 0.04, 1, dk)
+                D.rect(-1, k * 0.2 - 0.04, 1, k * 0.2 + 0.04, dk)
+                D.line([(-1, k * 0.2 + 0.1), (1, k * 0.2 + 0.1)], lt, 0.012)
+            D.poly([(-0.3, 1), (0, 0.66), (0.3, 1)], spec["skin"])
+            for sx in (-1, 1):
+                D.rect(sx * 0.5 - 0.07, -1, sx * 0.5 + 0.07, 1, spec.get("suspenders", (70, 50, 40)))
+                D.ell(sx * 0.5, -0.55, 0.06, 0.06, (236, 196, 80), n=8)
         elif spec.get("cardigan"):
             D.poly([(-0.42, 1), (0.42, 1), (0.0, -0.2)], spec["inner"])
             D.poly([(-0.2, 1), (0, 0.78), (0.2, 1)], spec["skin"])
@@ -417,7 +437,18 @@ def character(sc, spec, pos=(0, 0, 0), yaw=0, face="smile", pose=None, live=Fals
             B(J @ T(0, -ll / 4, 0), (lw, ll / 2, lw), leg_col)
             K = J @ T(0, -ll / 2, 0) @ RX(knee)
             B(K @ T(0, -(ll / 2 - shoe_h) / 2, 0), (lw * 0.995, ll / 2 - shoe_h, lw * 0.995), leg_col)
-        B(K @ T(0, -ll / 2 + shoe_h / 2, 0.025 * s), (lw * 1.02, shoe_h, lw * 1.1), spec["shoes"])
+        bk = spec.get("boots", 0)
+        if bk and not p.get("barefoot"):
+            # heavy iron boots: big, tall, with a strap and buckle round the top
+            bh = shoe_h * (1.2 + 0.9 * bk)
+            bw, bd = lw * (1.0 + 0.32 * bk), lw * (1.12 + 0.42 * bk)
+            Mb = K @ T(0, -ll / 2 + bh / 2, 0.05 * s * bk)
+            B(Mb, (bw, bh, bd), spec["shoes"])
+            B(Mb @ T(0, bh * 0.28, 0), (bw * 1.04, bh * 0.16, bd * 1.04), spec.get("strap", (70, 60, 52)))
+            B(Mb @ T(sx * bw * 0.52, bh * 0.28, bd * 0.1), (0.05 * s, bh * 0.2, bh * 0.22), (236, 196, 80))
+        else:
+            B(K @ T(0, -ll / 2 + shoe_h / 2, 0.025 * s), (lw * 1.02, shoe_h, lw * 1.1),
+              (236, 236, 240) if p.get("barefoot") else spec["shoes"])
         feet["foot_l" if sx < 0 else "foot_r"] = xf(K, (0, -ll / 2, 0))
 
     # torso
