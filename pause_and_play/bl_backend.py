@@ -61,7 +61,7 @@ class _World:
         sc.view_settings.view_transform = "Standard"
         sc.view_settings.look = "None"
         ee = sc.eevee
-        for k, v in (("taa_render_samples", 6), ("use_bokeh_jittered", False), ("bokeh_max_size", 40.0), ("use_shadows", True), ("shadow_resolution_scale", 0.5),
+        for k, v in (("taa_render_samples", int(os.environ.get("BL_TAA", "6"))), ("use_bokeh_jittered", False), ("bokeh_max_size", 40.0), ("use_shadows", True), ("shadow_resolution_scale", 0.5),
                      ("shadow_ray_count", 1), ("shadow_step_count", 4), ("use_raytracing", False),
                      ("use_gtao", True), ("gtao_distance", 0.6), ("fast_gi_method", "GLOBAL_ILLUMINATION")):
             try:
