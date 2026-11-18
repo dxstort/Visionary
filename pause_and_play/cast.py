@@ -685,6 +685,16 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
         sc.box(Mh @ T(0, hh / 2 + 0.1 * s, 0.1 * s), (hw * 0.66, 0.26 * s, hd * 0.4), (255, 255, 255), layer=layer,
                live=live, bias=-0.55, decal=cross)
         return 0.34
+    if st == "chef":
+        back(0.62, 0.05)
+        cap(0.36, 0.44)
+        blob(T(0, hh * 0.46, 0), (hw * 1.06, hh * 0.22, hd * 1.06), (250, 250, 250), e=0.3, bias=-0.4, n=22, m=4)
+        blob(T(0, hh * 0.5 + 0.42 * s, 0), (hw * 1.25, 0.7 * s, hd * 1.25), (255, 255, 255), e=0.9, bias=-0.5, n=16,
+             m=10)
+        for a in (-0.6, 0.0, 0.6):
+            blob(T(math.sin(a) * hw * 0.42, hh * 0.5 + 0.62 * s, math.cos(a) * hd * 0.3), (0.42 * s, 0.4 * s, 0.42 * s),
+                 (255, 255, 255), e=0.9, bias=-0.55, n=12, m=8)
+        return 1.0
     if st == "elder":
         # bald crown with a white horseshoe of hair round the sides and back
         for sx in (-1, 1):

@@ -79,7 +79,12 @@ def main():
             toks.append((seg[k][0], tok))
             k += len(spoken(tok))
         shots.append((num, toks))
-    starts = [0.0] + [toks[0][0] - LEAD for _, toks in shots[1:]] + [seg[-1][1] + TAIL]
+    starts = [0.0] + [toks[0][0] - LEAD if toks else None for _, toks in shots[1:]] + [seg[-1][1] + TAIL]
+    # a shot with no narration (a silent beat) takes SILENT[num] seconds from the end of the shot before it
+    silent = getattr(mod, "SILENT", {})
+    for i in range(len(shots) - 1, 0, -1):
+        if starts[i] is None:
+            starts[i] = starts[i + 1] - silent.get(shots[i][0], 0.6)
     out = {num: dict(dur=round(starts[i + 1] - starts[i], 3),
                      words=[[round(max(0.0, t - starts[i]), 3), w] for t, w in toks])
            for i, (num, toks) in enumerate(shots)}

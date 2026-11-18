@@ -396,7 +396,7 @@ def facade(sc, color, open_k=0.0, room_k=0.3, old=False, lamp_k=None, win_y=2.6,
                 win=np.array([0, win_y, 0]), lamp=lamp, inside=np.array([0, 0.9, -0.75]))
 
 
-def nova_room(sc, lamp_k=1.0):
+def nova_room(sc, lamp_k=1.0, day=False, wall=(160, 170, 226)):
     """Nova's bedroom at night: wall with an open window (night outside), bed, nightstand with alarm clock."""
     sets.floor_tiles(sc, -6, 6, -4, 8, (150, 112, 90), (140, 104, 84), step=1.0)
 
@@ -406,11 +406,12 @@ def nova_room(sc, lamp_k=1.0):
         for u, v in ((-0.7, 0.5), (-0.4, -0.2), (0.6, 0.6), (0.75, -0.4), (-0.85, -0.6)):
             D.poly(star_poly(u, v, 0.03), (250, 220, 120))
 
-    sets.wall(sc, 0, 3.5, -3.2, 12, 7, (160, 170, 226), decal=paper)
+    sets.wall(sc, 0, 3.5, -3.2, 12, 7, wall, decal=paper)
     # window opening in the back wall, sky behind
-    sc.box(T(1.6, 3.0, -3.0), (1.6, 1.6, 0.05), (14, 22, 58), layer=2, lit=False)
-    for u, v in ((1.2, 3.4), (1.9, 2.6), (2.1, 3.5), (1.4, 2.5)):
-        sc.blob(T(u, v, -2.95), (0.035, 0.035, 0.01), (255, 250, 220), layer=2, lit=False, n=6, m=4)
+    sc.box(T(1.6, 3.0, -3.0), (1.6, 1.6, 0.05), (150, 205, 250) if day else (14, 22, 58), layer=2, lit=False)
+    if not day:
+        for u, v in ((1.2, 3.4), (1.9, 2.6), (2.1, 3.5), (1.4, 2.5)):
+            sc.blob(T(u, v, -2.95), (0.035, 0.035, 0.01), (255, 250, 220), layer=2, lit=False, n=6, m=4)
     trim = (250, 248, 240)
     for sx in (-1, 1):
         sc.box(T(1.6 + sx * 0.86, 3.0, -2.98), (0.12, 1.84, 0.12), trim, layer=3)

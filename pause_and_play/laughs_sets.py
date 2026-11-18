@@ -183,7 +183,7 @@ def cat(sc, M, t=0.0, mood="calm", fur=(240, 150, 70), s=1.0):
     return xf(H, (0, 0.35 * s, 0))
 
 
-def dog(sc, M, t=0.0, fur=(196, 140, 90), hat=True):
+def dog(sc, M, t=0.0, fur=(196, 140, 90), hat=True, mood="happy", helmet=False, spots=None):
     dk = tuple(int(v * 0.75) for v in fur)
     sc.box(M @ T(0, 0.55, 0), (0.6, 0.5, 1.1), fur, layer=5)
     for sx in (-1, 1):
@@ -192,12 +192,24 @@ def dog(sc, M, t=0.0, fur=(196, 140, 90), hat=True):
     sc.box(M @ T(0, 0.9, -0.62) @ RX(-40 + 20 * math.sin(t * 18)), (0.1, 0.4, 0.1), dk, layer=5)
 
     def face(D):
+        ink = (40, 28, 48)
+        if spots:
+            D.ell(-0.45, 0.35, 0.3, 0.35, spots, n=14)
         for sx in (-1, 1):
-            D.ell(sx * 0.4, 0.2, 0.13, 0.17, (40, 28, 48), n=12)
+            D.ell(sx * 0.4, 0.2, 0.13, 0.17, ink, n=12)
             D.ell(sx * 0.4 + 0.04, 0.27, 0.04, 0.05, (255, 255, 255), n=8)
-        D.ell(0, -0.28, 0.22, 0.15, (40, 28, 48), n=12)
-        D.arc(0, -0.5, 0.25, 0.15, 200, 340, (40, 28, 48), 0.05)
-        D.ell(0.1, -0.68, 0.1, 0.12, (240, 110, 130), n=10)
+            if mood == "sad":
+                D.line([(sx * 0.6, 0.48), (sx * 0.22, 0.55)], ink, 0.05)
+        D.ell(0, -0.28, 0.22, 0.15, ink, n=12)
+        if mood == "talk":
+            open_ = 0.1 + 0.12 * abs(math.sin(t * 22))
+            D.ell(0, -0.6, 0.22, open_ + 0.05, ink, n=14)
+            D.ell(0, -0.66, 0.12, open_ * 0.6, (240, 110, 130), n=10)
+        elif mood == "sad":
+            D.arc(0, -0.72, 0.22, 0.12, 25, 155, ink, 0.05)
+        else:
+            D.arc(0, -0.5, 0.25, 0.15, 200, 340, ink, 0.05)
+            D.ell(0.1, -0.68, 0.1, 0.12, (240, 110, 130), n=10)
 
     H = M @ T(0, 1.0, 0.62)
     sc.box(H, (0.56, 0.5, 0.5), fur, layer=5, decal=face)
@@ -205,6 +217,12 @@ def dog(sc, M, t=0.0, fur=(196, 140, 90), hat=True):
         sc.box(H @ T(sx * 0.32, 0.05, -0.05) @ RZ(sx * 15), (0.12, 0.38, 0.22), dk, layer=5)
     if hat:
         ps.party_hat(sc, H @ T(0.05, 0.25, 0) @ RZ(-12) @ T(0, 0, 0), color=(90, 160, 255))
+    if helmet:
+        sc.blob(H @ T(0, 0.2, -0.04), (0.64, 0.36, 0.6), (130, 84, 50), e=0.6, layer=5, n=14, m=8)
+        for sx in (-1, 1):
+            sc.blob(H @ T(sx * 0.13, 0.33, 0.24), (0.2, 0.17, 0.08), (90, 90, 100), e=0.7, layer=5, n=10, m=5)
+            sc.blob(H @ T(sx * 0.13, 0.33, 0.27), (0.13, 0.11, 0.04), (170, 220, 250), e=0.7, layer=5, n=10, m=5)
+            sc.box(H @ T(sx * 0.3, -0.05, 0.05), (0.04, 0.3, 0.12), (110, 70, 44), layer=5)
     return xf(H, (0, 0.4, 0))
 
 
