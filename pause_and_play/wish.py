@@ -811,4 +811,7 @@ def w53(t, dur):
 _FNS = [globals()[f"w{i:02d}"] for i in range(1, len(LINES) + 1)]
 SHOTS = [(i + 1, 1.4, txt, fn) for i, (txt, fn) in enumerate(zip(LINES, _FNS))]
 SHOTS, WORD_TIMES = load_timing(SHOTS, TIMING_FILE)
+# the last word of shot 51 is still being spoken over the silent note shot: keep its caption up
+if WORD_TIMES.get(51) and not WORD_TIMES.get(52):
+    WORD_TIMES[52] = [(-0.1, WORD_TIMES[51][-1][1])]
 WT.update(WORD_TIMES)
