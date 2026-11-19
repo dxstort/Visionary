@@ -222,6 +222,11 @@ ORTIZ = _spec(name="Mrs Ortiz", style="bun", s=1.2, skin=(214, 156, 118), shirt=
 MAILMAN = _spec(name="Mailman", style="cap", s=1.26, skin=(176, 118, 86), shirt=(130, 170, 220), uniform=True,
                 pants=(40, 52, 96), shoes=(30, 30, 36), hair=(30, 24, 22), hat=(40, 52, 96), sleeve=0.5)
 
+ZARA = _spec(name="Zara", style="puffs", s=0.98, skin=(176, 118, 86), shirt=(250, 190, 60), pants=(70, 92, 150),
+             shoes=(240, 240, 240), hair=(40, 30, 28), goggles_head=True, sleeve=0.5)
+PHAM = _spec(name="Mr Pham", style="elder", s=1.2, head=(0.76, 0.72, 0.74), skin=(232, 196, 160), shirt=(200, 96, 84),
+             inner=(244, 236, 220), cardigan=True, pants=(80, 84, 96), shoes=(70, 56, 46), hair=(120, 120, 126),
+             bushy=(140, 140, 146), glasses=True, ears=True, sleeve=0.86)
 GUS = _spec(name="Grandpa Gus", style="elder", s=1.3, head=(0.8, 0.74, 0.78), torso=(1.1, 1.0, 0.58),
             skin=(236, 198, 168), shirt=(170, 62, 52), flannel=True, suspenders=(66, 50, 40), pants=(70, 74, 92),
             shoes=(96, 100, 112), boots=1.6, strap=(56, 52, 50), hair=(232, 232, 236), bushy=(236, 236, 240),
@@ -685,6 +690,25 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
         sc.box(Mh @ T(0, hh / 2 + 0.1 * s, 0.1 * s), (hw * 0.66, 0.26 * s, hd * 0.4), (255, 255, 255), layer=layer,
                live=live, bias=-0.55, decal=cross)
         return 0.34
+    if st == "puffs":
+        back(0.8, 0.05)
+        cap(0.42, 0.44)
+        for sx in (-1, 1):
+            blob(T(sx * rx * 0.62, hh * 0.72, -0.05 * s), (0.5 * s, 0.46 * s, 0.5 * s), hair, e=0.85, bias=-0.2, n=14,
+                 m=8)
+        if spec.get("goggles_head"):
+            blob(T(0, hh * 0.4, 0), (hw * 1.12, 0.1 * s, hd * 1.12), (60, 56, 64), e=0.3, bias=-0.5, n=20, m=4)
+            for sx in (-1, 1):
+                blob(T(sx * 0.17 * s, hh * 0.44, rz + 0.04 * s), (0.24 * s, 0.2 * s, 0.1 * s), (200, 150, 60), e=0.6,
+                     bias=-0.7, n=12, m=4)
+                blob(T(sx * 0.17 * s, hh * 0.44, rz + 0.08 * s), (0.16 * s, 0.13 * s, 0.04 * s), (170, 230, 255),
+                     e=0.6, bias=-0.75, n=10, m=4)
+        return 0.6
+    if st == "buzz":
+        blob(T(0, hh * 0.44, -0.02 * s), (hw * 1.04, hh * 0.3, hd * 1.04), hair, e=0.5, bias=-0.3, n=16, m=6)
+        for x, z in ((-0.15, 0.25), (0.2, -0.1), (0.05, 0.35)):
+            blob(T(x * s, hh * 0.58, z * s), (0.2 * s, 0.06 * s, 0.18 * s), spec["skin"], e=0.6, bias=-0.4, n=10, m=4)
+        return 0.06
     if st == "chef":
         back(0.62, 0.05)
         cap(0.36, 0.44)
