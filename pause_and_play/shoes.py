@@ -1,0 +1,56 @@
+"""The Walking Shoes: shot list. Each shot: (number, seconds, caption text, fn(t, dur) -> Scene)."""
+import os
+
+TIMING_FILE = "shoes_timing.json"
+SPOKEN = {"1965": "nineteen sixty five", "Mrs": "missus"}
+PHONES = {"rudy": "R UW D IY", "doyle": "D OY L", "doyle's": "D OY L Z", "kim's": "K IH M Z"}
+
+LINES = [
+    "In this town, when you put your shoes on in the morning,",
+    "they walk you wherever you're needed MOST.",
+    "You don't get a say.",
+    "Dad's shoes walk him to the bakery every morning.",
+    "He's not a baker. He's the taste tester.",
+    "Mrs Kim's shoes once walked her straight into the lake.",
+    "A duck needed help.",
+    "The mayor's shoes just walk him in circles.",
+    "Nobody needs the mayor.",
+    "I'm Rudy. I'm the goalie for the Hill Street Hawks.",
+    "I want my shoes to take me somewhere COOL.",
+    "The skate park. The candy store. Anywhere.",
+    "But every single day, they walk me to the same place.",
+    "Old Mrs Doyle's porch. Next door.",
+    "She sits there with a giant jigsaw puzzle.",
+    "Her eyes aren't great anymore. So I find the pieces for her.",
+    "Every. Single. Day.",
+    "It's the most boring puzzle in the world. Mostly green grass.",
+    "And half the pieces are MISSING.",
+    "Saturday was the championship game.",
+    "I laced up my shoes.",
+    "Field, I told them. Please. Just this once.",
+    "They turned left.",
+    "Mrs Doyle's porch. AGAIN.",
+    "I tried to run the other way. My shoes dragged me backwards.",
+    "Mrs Doyle smiled. Found the last piece this morning.",
+    "She pressed it in.",
+    "The puzzle wasn't just grass.",
+    "It was a soccer field. And a goalie. Diving. Gloves out.",
+    "A trophy behind her.",
+    "Town champions. 1965, Mrs Doyle said.",
+    "She reached under her chair.",
+    "Old leather gloves. Cracked. Perfect.",
+    "Penalty shootout, she said.",
+    "Watch the striker's hips. Not the ball.",
+    "Then my shoes turned around. Toward the field.",
+    "And they RAN.",
+    "I made it for the shootout.",
+    "Last kick.",
+    "I watched the hips.",
+    "I dove left.",
+    "SAVED IT.",
+    "The Hawks won.",
+    "My shoes always walk me where I'm needed most.",
+    "I thought she needed me.",
+    "I needed her TOO.",
+]
+SHOTS = [(i + 1, 1.4, txt, None) for i, txt in enumerate(LINES)]

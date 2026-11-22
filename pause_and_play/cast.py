@@ -227,6 +227,15 @@ ZARA = _spec(name="Zara", style="puffs", s=0.98, skin=(176, 118, 86), shirt=(250
 PHAM = _spec(name="Mr Pham", style="elder", s=1.2, head=(0.76, 0.72, 0.74), skin=(232, 196, 160), shirt=(200, 96, 84),
              inner=(244, 236, 220), cardigan=True, pants=(80, 84, 96), shoes=(70, 56, 46), hair=(120, 120, 126),
              bushy=(140, 140, 146), glasses=True, ears=True, sleeve=0.86)
+MIA = _spec(name="Mia", style="bob", s=0.98, skin=(236, 190, 150), shirt=(255, 210, 60), raincoat=True,
+            pants=(60, 80, 130), shoes=(220, 60, 60), boots=0.6, strap=(190, 50, 50), hair=(110, 66, 40), sleeve=0.86)
+OMAR = _spec(name="Omar", style="tuft", s=0.98, skin=(150, 100, 70), shirt=(90, 170, 110), pants=(70, 70, 90),
+             shoes=(240, 240, 240), hair=(30, 24, 22), sleeve=0.5)
+FARMER = _spec(name="Omar's dad", style="cap", s=1.28, skin=(150, 100, 70), shirt=(70, 120, 180), flannel=True,
+               suspenders=(120, 90, 60), pants=(110, 90, 60), shoes=(90, 70, 50), hair=(30, 24, 22),
+               beard=(36, 28, 26), hat=(200, 60, 50), sleeve=0.86)
+BRYCE = _spec(name="Bryce", style="messy", s=1.0, skin=(250, 214, 180), shirt=(240, 100, 60), pants=(60, 70, 110),
+              shoes=(240, 240, 240), hair=(220, 120, 60), sleeve=0.5)
 GUS = _spec(name="Grandpa Gus", style="elder", s=1.3, head=(0.8, 0.74, 0.78), torso=(1.1, 1.0, 0.58),
             skin=(236, 198, 168), shirt=(170, 62, 52), flannel=True, suspenders=(66, 50, 40), pants=(70, 74, 92),
             shoes=(96, 100, 112), boots=1.6, strap=(56, 52, 50), hair=(232, 232, 236), bushy=(236, 236, 240),
@@ -348,6 +357,14 @@ def _torso_decal(spec):
             for sx in (-1, 1):
                 D.rect(sx * 0.5 - 0.07, -1, sx * 0.5 + 0.07, 1, spec.get("suspenders", (70, 50, 40)))
                 D.ell(sx * 0.5, -0.55, 0.06, 0.06, (236, 196, 80), n=8)
+        elif spec.get("raincoat"):
+            dk = tuple(int(v * 0.8) for v in spec["shirt"])
+            D.poly([(-0.36, 1), (0, 0.6), (0.36, 1)], dk)
+            D.line([(0.0, 0.6), (0.0, -1)], dk, 0.03)
+            for vv in (0.3, -0.05, -0.4, -0.75):
+                D.ell(-0.12, vv, 0.06, 0.06, (60, 60, 70), n=10)
+            for sx in (-1, 1):
+                D.rect(sx * 0.6 - 0.22, -0.7, sx * 0.6 + 0.22, -0.35, dk)
         elif spec.get("cardigan"):
             D.poly([(-0.42, 1), (0.42, 1), (0.0, -0.2)], spec["inner"])
             D.poly([(-0.2, 1), (0, 0.78), (0.2, 1)], spec["skin"])
