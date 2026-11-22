@@ -114,7 +114,7 @@ def s01(t, dur):
     u = t / dur
     pos = (0.0, 0, -4.2)
     pose = dict(lean=40, al=(70, -10), ar=(70, -10), el=30, er=30)
-    sc = dcam((0.8, 1.2, -1.8), (0.0, 0.5, -4.0), u, 0.14, fov=40)
+    sc = dfcam((0.0, 0, -4.2), 2.2, 70, u, frac=0.5, fov=40, push=0.12)
     sets.town(sc)
     a = character(sc, crowd_spec(4), pos, face="smile", pose=pose)
     return sc
@@ -154,7 +154,7 @@ def s04(t, dur):
 def s05(t, dur):
     u = t / dur
     pose = dict(ar=(150, -30), er=80, al=(10, 6))
-    sc = head_cu(DAD, (0, 0, 0.2), 0, pose, u, dist=3.6, fov=36)
+    sc = head_cu(DAD, (0, 0, 0.2), 0, pose, u, dist=5.0, up=0.2, fov=36)
     ss.bakery_counter(sc, t)
     a = character(sc, DAD, (0, 0, 0.2), face="chew0" if int(t * 6) % 2 else "chew1", pose=pose)
     ss.flour(sc, a, t)
@@ -187,7 +187,7 @@ def s07(t, dur):
 
 def s08(t, dur):
     u = t / dur
-    sc = dcam((0.0, 10.0, 6.0), (0.0, 0.0, 0.6), u, 0.0, fov=44)
+    sc = dcam((0.0, 9.0, 9.5), (0.0, 1.0, 0.6), u, 0.0, fov=44)
     sets.town(sc)
     a_ = t * 2.4
     p = (1.4 * math.cos(a_), 0, 0.6 + 1.4 * math.sin(a_))
@@ -313,7 +313,7 @@ def s17(t, dur):
 def s18(t, dur):
     u = t / dur
     top = np.array([ss.TABLE[0], ss.PORCH_Y + 0.86, ss.TABLE[2]])
-    sc = dcam(top + np.array([0.0, 2.4, 0.3]), top, u, 0.14, fov=40)
+    sc = dcam(top + np.array([0.0, 1.7, 1.9]), top, u, 0.14, fov=40)
     ss.doyle_porch(sc, t)
     return sc
 
@@ -359,7 +359,7 @@ def s22(t, dur):
 
 def s23(t, dur):
     u = t / dur
-    sc = dcam((0.6, 0.4, 2.2), (0.0, 0.4, 0.0), u, 0.0, fov=40, blur=0)
+    sc = dcam((1.2, 0.6, 3.4), (0.0, 0.45, 0.0), u, 0.0, fov=40, blur=0)
     sets.town(sc)
     turn = clamp((t - 0.1) / 0.25)
     a = character(sc, RUDY, (0, 0, 0), yaw=-90 * turn, face="shock")
@@ -422,7 +422,7 @@ def s27(t, dur):
 def s28(t, dur):
     u = t / dur
     top = np.array([ss.TABLE[0], ss.PORCH_Y + 0.86, ss.TABLE[2]])
-    sc = dcam(top + np.array([0.0, 1.6 + 0.8 * u, 0.3]), top, u, 0.0, fov=40)
+    sc = dcam(top + np.array([0.0, 1.5 + 0.3 * u, 1.6 + 0.5 * u]), top, u, 0.0, fov=40)
     ss.doyle_porch(sc, t, state="full")
     return sc
 
@@ -491,7 +491,7 @@ def s35(t, dur):
 # ------------------------------------------------------- 36-43: the shootout
 def s36(t, dur):
     u = t / dur
-    sc = dcam((0.6, 0.45, 3.4), (0.0, 0.4, 1.4), u, 0.0, fov=40, blur=0)
+    sc = dcam((0.9, 0.6, 6.4), (0.0, 0.45, 3.4), u, 0.0, fov=40, blur=0)
     ss.doyle_porch(sc, t)
     turn = clamp((t - 0.2) / 0.5)
     a = character(sc, RUDY, (0.0, 0, 1.4 + 2.0), yaw=lerp(0, 180, turn), face="joy")
@@ -527,7 +527,7 @@ def s38(t, dur):
 
 def s39(t, dur):
     u = t / dur
-    sc = dcam((1.4, 1.6, ss.SPOT[2] + 3.6), (0.0, 1.0, ss.SPOT[2]), u, 0.0, fov=40)
+    sc = dcam((2.4, 2.0, ss.SPOT[2] + 6.4), (0.3, 1.2, ss.SPOT[2] + 0.6), u, 0.0, fov=40)
     ss.soccer_field(sc, t)
     character(sc, STRIKER, ss.SPOT + np.array([0.6, 0, 1.0]), yaw=180, face="grit", pose=dict(lean=25, ar=(40, 10)))
     ss.ball(sc, T(*(ss.SPOT + np.array([0, 0.23, 0]))))
