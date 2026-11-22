@@ -62,7 +62,7 @@ import shoes_sets as ss  # noqa: E402
 import sets  # noqa: E402
 from cast import DAD, DOYLE, MAYOR, RUDY, character, crowd_spec, sit  # noqa: E402
 from engine import RX, RY, RZ, T, add_emote, clamp, lerp, speed_lines, xf  # noqa: E402
-from laughs import bob, dcam, dfcam, head_cu, ht  # noqa: E402
+from laughs import bob, dcam, dfcam, head_cu, ht, probe  # noqa: E402
 from shots import confetti, sparks, walk  # noqa: E402
 from story import load_timing  # noqa: E402
 
@@ -114,7 +114,7 @@ def s01(t, dur):
     u = t / dur
     pos = (0.0, 0, -4.2)
     pose = dict(lean=40, al=(70, -10), ar=(70, -10), el=30, er=30)
-    sc = dfcam((0.0, 0, -4.2), 2.2, 70, u, frac=0.5, fov=40, push=0.12)
+    sc = dfcam((0.0, 0, -4.2), 2.2, 25, u, frac=0.42, fov=40, push=0.06)
     sets.town(sc)
     a = character(sc, crowd_spec(4), pos, face="smile", pose=pose)
     return sc
@@ -397,9 +397,7 @@ def s26(t, dur):
     c = ss.CHAIR
     ll = DOYLE["leg"][1] * DOYLE["s"]
     pos = (c[0], c[1] + 0.75 - ll, c[2])
-    p = sit()
-    p.update(pose)
-    sc = head_cu(DOYLE, pos, 30, p, u, dist=3.0, fov=36, push=0.12)
+    sc = doyle_cam(pose, u, dist=5.0, push=0.06, ang=40)
     ss.doyle_porch(sc, t, rock=False)
     d = doyle_seated(sc, "joy", pose)
     ss.piece(sc, T(*(d["hand_r"] + np.array([0, 0.12, 0.05]))) @ RX(-70), s=1.3)
@@ -446,14 +444,26 @@ def s30(t, dur):
     return sc
 
 
+def doyle_cam(pose, u, dist=3.0, push=0.08, ang=50, up=0.15, fov=36):
+    """Close-up on Mrs Doyle as she actually sits (facing +x): aim at her real head, camera `ang` degrees
+    round from her front toward the porch front (+z)."""
+    p = sit()
+    p.update(al=(50, 4), ar=(50, 4))
+    p.update(pose or {})
+    ll = DOYLE["leg"][1] * DOYLE["s"]
+    c = ss.CHAIR
+    h = probe(DOYLE, (c[0], c[1] + 0.75 - ll, c[2]), 90, p)["head"]
+    a = math.radians(ang)
+    dv = np.array([math.cos(a), 0.0, math.sin(a)])
+    return dcam(h + dv * dist + np.array([0, up, 0]), h - np.array([0, 0.1, 0]), u, push, fov)
+
+
 def _doyle_cu(t, dur, face, pose=None, dist=3.0, push=0.08):
     u = t / dur
     c = ss.CHAIR
     ll = DOYLE["leg"][1] * DOYLE["s"]
     pos = (c[0], c[1] + 0.75 - ll, c[2])
-    p = sit()
-    p.update(pose or {})
-    sc = head_cu(DOYLE, pos, 40, p, u, dist=dist, fov=36, push=push)
+    sc = doyle_cam(pose, u, dist=dist * 1.7, push=push * 0.5)
     ss.doyle_porch(sc, t, state="full", rock=False)
     d = doyle_seated(sc, face, pose)
     return sc, d
@@ -471,7 +481,7 @@ def s32(t, dur):
 
 def s33(t, dur):
     u = t / dur
-    sc, d = _doyle_cu(t, dur, "smile", dict(al=(60, -20), ar=(60, -20), el=50, er=50), dist=2.0, push=0.14)
+    sc, d = _doyle_cu(t, dur, "smile", dict(al=(60, -20), ar=(60, -20), el=50, er=50), dist=2.6, push=0.1)
     ss.glove_pair(sc, T(*((d["hand_l"] + d["hand_r"]) / 2 + np.array([0, 0.12, 0.15]))) @ RY(-40))
     ls.glow_at(sc, (d["hand_l"] + d["hand_r"]) / 2 + np.array([0, 0.2, 0.15]), 0.7, (255, 230, 160), 50)
     return sc
@@ -609,7 +619,7 @@ def s44(t, dur):
 
 def s45(t, dur):
     u = t / dur
-    sc = dcam((-7.0, 2.4, 2.4), (-9.6, 1.6, -1.2), u, 0.04, fov=42)
+    sc = dcam((-8.6, 2.2, 4.2), (-9.8, 1.4, -1.1), u, 0.04, fov=42)
     ss.soccer_field(sc, t)
     k = clamp(t / 0.7)
     hug = dict(al=(80, -30), ar=(80, -30), el=50, er=50)
