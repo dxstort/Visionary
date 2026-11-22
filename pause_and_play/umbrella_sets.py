@@ -148,14 +148,14 @@ def cracked(sc, M, w=6.0, h=6.0, wet=0.0):
         base = tuple(int(DRY[i] + (SOIL[i] - DRY[i]) * wet) for i in range(3))
         D.rect(-1, -1, 1, 1, base)
         rng = np.random.RandomState(4)
-        for _ in range(40):
+        for _ in range(140):
             x, y = rng.uniform(-1, 1), rng.uniform(-1, 1)
             pts = [(x, y)]
             for _ in range(4):
-                x += rng.uniform(-0.2, 0.2)
-                y += rng.uniform(-0.2, 0.2)
+                x += rng.uniform(-0.07, 0.07)
+                y += rng.uniform(-0.07, 0.07)
                 pts.append((x, y))
-            D.line(pts, tuple(int(v * 0.45) for v in base), 0.03)
+            D.line(pts, tuple(int(v * 0.5) for v in base), 0.008)
         if wet > 0:
             for _ in range(int(60 * wet)):
                 D.ell(rng.uniform(-1, 1), rng.uniform(-1, 1), 0.04, 0.03, tuple(int(v * 0.7) for v in base), n=8)

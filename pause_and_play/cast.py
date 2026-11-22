@@ -236,6 +236,11 @@ FARMER = _spec(name="Omar's dad", style="cap", s=1.28, skin=(150, 100, 70), shir
                beard=(36, 28, 26), hat=(200, 60, 50), sleeve=0.86)
 BRYCE = _spec(name="Bryce", style="messy", s=1.0, skin=(250, 214, 180), shirt=(240, 100, 60), pants=(60, 70, 110),
               shoes=(240, 240, 240), hair=(220, 120, 60), sleeve=0.5)
+RUDY = _spec(name="Rudy", style="side", s=0.98, skin=(214, 156, 118), shirt=(60, 170, 90), jersey=True,
+             accent=(250, 220, 80), pants=(30, 40, 60), shoes=(240, 240, 240), hair=(70, 46, 30), sleeve=0.86)
+DOYLE = _spec(name="Mrs Doyle", style="bun", s=1.14, skin=(246, 214, 190), shirt=(200, 150, 200), inner=(250, 244, 232),
+              cardigan=True, pants=(90, 80, 110), shoes=(120, 90, 80), hair=(242, 242, 246), glasses=True,
+              accent=(150, 200, 240), sleeve=0.86)
 GUS = _spec(name="Grandpa Gus", style="elder", s=1.3, head=(0.8, 0.74, 0.78), torso=(1.1, 1.0, 0.58),
             skin=(236, 198, 168), shirt=(170, 62, 52), flannel=True, suspenders=(66, 50, 40), pants=(70, 74, 92),
             shoes=(96, 100, 112), boots=1.6, strap=(56, 52, 50), hair=(232, 232, 236), bushy=(236, 236, 240),
