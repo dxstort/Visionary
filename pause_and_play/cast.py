@@ -267,7 +267,13 @@ def _torso_decal(spec):
     st = spec["style"]
 
     def decal(D):
-        if spec.get("frogtee"):
+        if spec.get("apron"):
+            a = spec["apron"]
+            D.poly([(-0.5, 0.7), (0.5, 0.7), (0.75, -1), (-0.75, -1)], a)
+            D.line([(-0.5, 0.7), (-0.2, 1.0)], a, 0.04)
+            D.line([(0.5, 0.7), (0.2, 1.0)], a, 0.04)
+            D.rect(-0.35, -0.7, 0.35, -0.2, tuple(v * 0.9 for v in a))
+        elif spec.get("frogtee"):
             D.arc(0, 0.92, 0.3, 0.2, 180, 360, spec["arm_shirt"], 0.07)
             for sx in (-1, 1):
                 D.poly([(sx * 1, 1), (sx * 0.56, 1), (sx * 1, 0.4)], spec["arm_shirt"])
