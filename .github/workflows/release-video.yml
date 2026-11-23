@@ -1,0 +1,38 @@
+name: Publish video release
+
+# Each finished video gets a manifest in pause_and_play/releases/ (NN_story.json, NN = story number so the
+# newest video sorts last and becomes the "latest" release). Pushing a manifest creates a GitHub Release with
+# the mp4 and thumbnails attached; manifests that already have a release are skipped.
+on:
+  push:
+    paths:
+      - "pause_and_play/releases/*.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create releases for new manifests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for m in $(ls pause_and_play/releases/*.json | sort); do
+            tag=$(jq -r .tag "$m")
+            if gh release view "$tag" >/dev/null 2>&1; then
+              echo "release $tag already exists, skipping"
+              continue
+            fi
+            jq -r .description "$m" > notes.md
+            mapfile -t files < <(jq -r '.video, .thumbnails[]' "$m")
+            for f in "${files[@]}"; do test -f "$f" || { echo "missing $f"; exit 1; }; done
+            gh release create "$tag" "${files[@]}" --title "$(jq -r .title "$m")" --notes-file notes.md --target "$GITHUB_SHA"
+            echo "published $tag"
+            sleep 2
+          done
