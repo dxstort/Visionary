@@ -285,6 +285,13 @@ def _torso_decal(spec):
                 D.ell(sx * 0.16, 0.37, 0.03, 0.035, (30, 30, 30), n=8)
                 D.ell(sx * 0.2, 0.14, 0.035, 0.025, (255, 150, 160), n=8)
             D.arc(0, 0.2, 0.1, 0.06, 200, 340, (30, 60, 30), 0.03)
+        elif spec.get("striped"):
+            c1, c2 = spec["striped"]
+            for k in range(-10, 10):
+                D.rect(-1, k * 0.1, 1, k * 0.1 + 0.1, c1 if k % 2 else c2)
+            D.poly([(-0.3, 1), (0, 0.66), (0.3, 1)], spec["skin"])
+            for u, v, r in ((0.32, -0.25, 0.2), (-0.4, -0.6, 0.15), (0.05, 0.3, 0.1)):
+                D.ell(u, v, r, r * 0.8, (206, 44, 40), n=10)
         elif spec.get("floral"):
             rnd = np.random.RandomState(7)
             D.rect(-1, -1, 1, 1, spec["shirt"])
@@ -426,6 +433,13 @@ def _arm_decal(spec):
         return decal
     if spec.get("hoodie"):
         return lambda D: D.rect(-1, -1, 1, -0.86, tuple(v * 0.8 for v in spec["shirt"]))
+    if spec.get("striped"):
+        c1, c2 = spec["striped"]
+
+        def decal(D):
+            for k in range(-10, 10):
+                D.rect(-1, k * 0.1, 1, k * 0.1 + 0.1, c1 if k % 2 else c2)
+        return decal
     return None
 
 
@@ -495,6 +509,18 @@ def character(sc, spec, pos=(0, 0, 0), yaw=0, face="smile", pose=None, live=Fals
 
         sc.blob(Mt @ T(0, -0.12 * s, td / 2 + 0.01 * s), (tw * 0.82, th * 0.76, 0.28 * s), shirt, e=0.8, e2=0.5,
                 layer=layer, live=live, bias=-0.06, n=12, m=8, decal=buttons)
+    if spec.get("backpack"):
+        bc = spec["backpack"]
+        dk = tuple(int(v * 0.78) for v in bc)
+        B(Mt @ T(0, 0.02 * s, -td / 2 - 0.2 * s), (tw * 0.78, th * 0.82, 0.38 * s), bc)
+        B(Mt @ T(0, -th * 0.18, -td / 2 - 0.41 * s), (tw * 0.5, th * 0.32, 0.06 * s), dk)
+        for sx in (-1, 1):
+            B(Mt @ T(sx * tw * 0.3, 0.04 * s, td / 2 + 0.012 * s), (0.1 * s, th * 0.92, 0.03 * s), dk)
+    if spec.get("badge"):
+        sc.blob(Mt @ T(-tw * 0.24, th * 0.3, td / 2 + 0.17 * s), (0.26 * s, 0.26 * s, 0.07 * s), (252, 204, 52),
+                e=0.9, layer=layer, live=live, bias=-0.15, n=12, m=6)
+        sc.blob(Mt @ T(-tw * 0.24, th * 0.3, td / 2 + 0.2 * s), (0.13 * s, 0.13 * s, 0.05 * s), (232, 150, 40),
+                e=0.9, layer=layer, live=live, bias=-0.2, n=10, m=6)
     if spec.get("cape"):
         B(Mt @ T(0, th / 2 - 0.04 * s, -td / 2 - 0.04 * s) @ RX(-p.get("cape", 8)) @ T(0, -th * 0.65, -0.02),
           (tw * 0.98, th * 1.3, 0.05 * s), spec["cape"])
@@ -692,6 +718,27 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
         for sx in (-1, 1):
             spike(sx * 1.0, 0.25, 0.1, sx * 0.3, -1.0, 0.0, 0.16, 0.18)
         return 0.22
+    if st == "pirate":
+        back(0.62, 0.05)
+        hat = (30, 26, 36)
+        blob(T(0, hh * 0.6, -0.01 * s), (hw * 1.16, hh * 0.52, hd * 1.16), hat, e=0.35, bias=-0.35, n=22, m=8)
+        blob(T(0, hh * 0.36, 0.0) @ RX(-6), (hw * 1.75, 0.1 * s, hd * 1.5), hat, e=0.6, bias=-0.45, n=24, m=4)
+        for sx in (-1, 1):
+            blob(T(sx * hw * 0.78, hh * 0.44, 0.0) @ RZ(sx * -20), (0.3 * s, 0.14 * s, hd * 1.1), hat, e=0.6,
+                 bias=-0.5, n=12, m=4)
+
+        def skull(D):
+            D.ell(0, 0.25, 0.5, 0.45, (246, 246, 240), n=16)
+            D.rect(-0.28, -0.3, 0.28, -0.05, (246, 246, 240))
+            for sx in (-1, 1):
+                D.ell(sx * 0.2, 0.28, 0.14, 0.15, hat, n=10)
+            D.rect(-0.04, 0.02, 0.04, 0.08, hat)
+            D.line([(-0.5, -0.7), (0.5, -0.1)], (246, 246, 240), 0.08)
+            D.line([(0.5, -0.7), (-0.5, -0.1)], (246, 246, 240), 0.08)
+
+        sc.box(Mh @ T(0, hh * 0.58, hd * 0.585), (0.36 * s, 0.34 * s, 0.03 * s), hat, layer=layer, live=live,
+               bias=-0.6, decal=skull)
+        return 0.5
     if st == "tophat":
         for sx in (-1, 1):
             blob(T(sx * rx * 0.96, hh * 0.08, -0.05 * s), (0.18 * s, hh * 0.52, hd * 0.72), hair, e=0.6, bias=-0.05,
