@@ -5,7 +5,7 @@ TIMING_FILE = "glowtree_timing.json"
 SPOKEN = {"Ms": "miz", "Mrs": "missus", "Gomez's": "gomez's", "BEFORE": "before"}
 PHONES = {"rudy": "R UW D IY", "patel": "P AH T EH L", "gomez": "G OW M EH Z", "gomez's": "G OW M EH Z IH Z",
           "miz": "M IH Z", "necessary": "N EH S AH S EH R IY", "pajamas": "P AH JH AA M AH Z",
-          "bulldozer": "B UH L D OW Z ER"}
+          "bulldozer": "B UH L D OW Z ER", "sunhat": "S AH N HH AE T"}
 
 LINES = [
     "In this town, when you whisper a TRUE secret to a tree,",
@@ -153,7 +153,7 @@ def s02(t, dur):
 def s03(t, dur):
     u = t / dur
     k = 0.4 * clamp((t - dur * 0.6) / (dur * 0.4))
-    sc = cam((-3.2, 2.0, 7.4), (-5.2, 2.0, -2.2), u, 0.08, 42)
+    sc = cam((-4.0, 2.8, 11.0), (-5.4, 2.7, -2.2), u, 0.06, 44)
     town(sc, oak=k, t=t)
     a = whisper_to(sc, DAD_G, (-4.4, 0, -1.6), OAK[0], face="grin", t=t)
     ss.flour(sc, a, t)
@@ -177,7 +177,7 @@ def s04(t, dur):
 def s05(t, dur):
     u = t / dur
     k = 0.45 * clamp((t - dur * 0.55) / (dur * 0.45))
-    sc = cam((-1.2, 2.6, 13.0), (-4.8, 2.0, 3.6), u, 0.06, 42)
+    sc = cam((-3.2, 2.8, 14.0), (-5.4, 2.6, 3.6), u, 0.05, 44)
     sets.school_building(sc)
     gs.glow_tree(sc, -6.5, 3.3, "maple", k, h=4.6, t=t, seed=2)
     a = whisper_to(sc, PATEL, (-4.6, 0, 5.2), -6.5, face="worried", t=t)
@@ -263,10 +263,10 @@ def s11(t, dur):
         gs.garden_gloves(sc, a)
         character(sc, RUDY_G, (GATE_X - 1.0, 0, -2.4), yaw=-20, face="smile", pose=dict(head=(0, 4, 0)))
     else:
-        sc = cam((GATE_X - 0.3, 2.0, -3.4), (GATE_X, 1.6, -6.0), tt / max(0.5, dur - 3.0), 0.1, 38)
+        sc = cam((GATE_X, 2.6, 2.4), (GATE_X, 2.4, -6.0), tt / max(0.5, dur - 3.0), 0.08, 46)
         gs.lot(sc, t)
         gs.ivy_wall(sc, 0.0, t=t)
-        ls.sticker(sc, (GATE_X, 3.0, -6.0), "40 YEARS", tt, start=0.15, hold=3.0, size=0.8, dy=0.0, color=(255, 230, 80))
+        ls.sticker(sc, (GATE_X, 3.4, -4.2), "40 YEARS", tt, start=0.15, hold=3.0, size=0.6, dy=0.0, color=(255, 230, 80))
     return sc
 
 
@@ -298,7 +298,7 @@ def s13(t, dur):
 
 def s14(t, dur):
     u = t / dur
-    sc = cam((0.6, 1.7, 3.2), (0.0, 3.6, -5.0), u, 0.1, 44)
+    sc = cam((0.6, 2.2, 9.6), (0.0, 3.0, -3.6), u, 0.08, 46)
     town(sc, 0.0, 0.0, 0.0, t=t)
     r = character(sc, RUDY_G, (0.4, 0, 1.4), yaw=180, face="worried", pose=dict(head=(0, -14, 0)))
     add_emote(sc, "?", r["head_top"], t, size=0.55, dx=0.5, dy=0.2, start=0.5)
@@ -308,9 +308,9 @@ def s14(t, dur):
 # ------------------------------------------------------------ 15-23: before dawn
 def s15(t, dur):
     u = t / dur
-    sc = cam((1.2, 1.4, 4.6), (-0.6 + 0.0 * u, 1.1, 0.2), u, 0.08, 42, mood=NIGHT)
-    town(sc, 0.1, 0.1, 0.1, t=t)
     x = 2.4 - 3.2 * u
+    sc = cam((x + 0.5, 2.0, 9.6), (x - 0.2, 1.5, 0.6), u, 0.05, 44, mood=NIGHT)
+    town(sc, 0.1, 0.1, 0.1, t=t)
     sw = math.sin(t * 5)
     character(sc, RUDY_PJ, (x, 0, 0.6), yaw=-90, face="worried", pose=dict(ll=26 * sw, lr=-26 * sw, lean=8, al=(10, 6),
               ar=(90, -10), er=60))
@@ -366,7 +366,7 @@ def s18(t, dur):
 def s19(t, dur):
     u = t / dur
     left = max(0, int(600 - 8 * t))
-    sc = cam((0.0, 1.8, 7.0), (0.0, 3.0, -9.0), u, 0.04, 48, mood=PREDAWN)
+    sc = cam((0.0, 2.4, 11.0), (0.0, 3.0, -6.0), u, 0.04, 46, mood=PREDAWN)
     town(sc, 0.0, 0.0, 0.0, t=t)
     character(sc, RUDY_PJ, (-1.0, 0, 1.6), yaw=180, face="worried", pose=dict(head=(0, -8, 0)))
     character(sc, TIM, (0.6, 0, 1.6), yaw=180, face="grit")
@@ -378,7 +378,7 @@ def s20(t, dur):
     u = t / dur
     k = 0.3 * clamp((t - 1.0) / 2.0)
     pos = (-5.2, 0, -1.2)
-    sc = cam((-2.6, 1.6, 2.6), (-5.6, 1.6, -2.0), u, 0.1, 38, mood=NIGHT)
+    sc = cam((-3.0, 2.2, 7.0), (-5.4, 2.2, -2.0), u, 0.06, 44, mood=NIGHT)
     town(sc, oak=k, t=t, oak_col=gs.GOLD)
     a = character(sc, RUDY_PJ, pos, yaw=-90, face="sleep" if False else "neutral",
                   pose=dict(lean=8, ar=(95, -20), er=10, al=(15, 8)))
@@ -401,7 +401,7 @@ def s22(t, dur):
     u = t / dur
     k = clamp(t / 0.4)
     pts = [(-4.2 + 0.9 * i, 0.4 + 0.5 * math.sin(i * 0.7)) for i in range(26)]
-    sc = cam((-8.0, 1.6, 4.6), (2.0, 1.2, 0.0), u, 0.0, 46, mood=NIGHT)
+    sc = cam((-2.4, 2.4, 10.8), (-2.4, 1.8, 0.0), u, 0.0, 50, mood=NIGHT)
     town(sc, oak=k, t=t, oak_col=gs.GOLD)
     gs.trail(sc, [p for p in pts if p[0] > -3.6][: int(3 + 40 * clamp(t / 1.4))], t, k)
     sc.flash = max(0.0, 0.45 * (1 - t / 0.2))
@@ -411,7 +411,7 @@ def s22(t, dur):
 
 def s23(t, dur):
     u = t / dur
-    sc = cam((-1.6, 1.5, 3.8), (-3.2, 1.4, 0.0), u, 0.1, 40, mood=NIGHT)
+    sc = cam((-2.8, 2.4, 12.5), (-2.8, 1.8, 0.4), u, 0.05, 44, mood=NIGHT)
     town(sc, oak=0.9, t=t, oak_col=gs.GOLD)
     character(sc, RUDY_PJ, (-3.6, 0, 0.4), yaw=40, face="worried" if t < dur * 0.6 else "smile", pose=dict(head=(0, 6, 0)))
     face = "smirk" if t < dur * 0.62 else "smile"
@@ -423,7 +423,7 @@ def s23(t, dur):
 def s24(t, dur):
     u = t / dur
     x = -8.0 + 16.0 * u
-    sc = cam((x + 1.0, 1.6, 6.6), (x + 1.6, 1.4, -1.0), u, 0.0, 46, mood=PREDAWN)
+    sc = cam((x + 0.4, 2.2, 11.5), (x + 0.6, 1.6, 0.6), u, 0.0, 46, mood=PREDAWN)
     gs.gym(sc, t)
     pts = [(x0, 0.6) for x0 in np.arange(-12, 14, 0.8)]
     gs.trail(sc, pts, t, 1.0)
@@ -437,7 +437,7 @@ def s25(t, dur):
     u = t / dur
     off = clamp((t - 1.3) / 1.6)
     k = 0.6 + 0.4 * math.sin(t * 6)
-    sc = cam((GATE_X - 2.6, 2.2, 6.8), (GATE_X, 2.0, -6.0), u, 0.08, 44, mood=PREDAWN)
+    sc = cam((GATE_X - 2.0, 2.8, 14.0), (GATE_X - 1.9, 2.4, -6.0), u, 0.05, 46, mood=PREDAWN)
     gs.lot(sc, t)
     gs.ivy_wall(sc, off, t=t)
     gs.glow_tree(sc, GATE_X - 5.2, -2.6, "maple", k, h=5.2, t=t, seed=2)
@@ -452,7 +452,7 @@ def s26(t, dur):
     run = clamp(t / 1.3)
     fall = clamp((t - 1.3) / 0.35)
     x = lerp(GATE_X - 5.0, GATE_X - 1.0, run)
-    sc = cam((GATE_X - 3.2, 1.6, 4.4), (GATE_X - 2.0, 0.9, -1.2), u, 0.1, 42, mood=PREDAWN)
+    sc = cam((GATE_X - 2.4, 2.4, 11.2), (GATE_X - 2.4, 1.4, -1.0), u, 0.0, 48, mood=PREDAWN)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, t=t)
     sc.blob(T(GATE_X - 1.0, 0.1, -1.0), (1.4, 0.2, 0.4), (110, 76, 52), layer=3, n=8, m=4)
@@ -486,7 +486,7 @@ def s27(t, dur):
 def s28(t, dur):
     u = t / dur
     k = clamp((t - 0.3) / 0.9)
-    sc = cam((GATE_X - 1.0, 1.6, 4.6), (GATE_X - 0.6, 1.2, -1.4), u, 0.1, 40, mood=PREDAWN)
+    sc = cam((GATE_X - 1.2, 2.2, 9.0), (GATE_X - 1.2, 1.5, -1.2), u, 0.06, 46, mood=PREDAWN)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, t=t)
     character(sc, RUDY_PJ, (GATE_X - 1.9, 0, -1.2), yaw=60, face="smile", pose=dict(al=(20, 8), ar=(60, -10), lean=8))
@@ -539,7 +539,7 @@ def s31(t, dur):
 def s32(t, dur):
     u = t / dur
     k = clamp((t - 0.8) / max(0.5, dur - 1.6))
-    sc = cam((GATE_X + 3.6, 1.9, 1.4), (GATE_X + 5.9, 1.9, -2.6), u, 0.14, 36, mood=PREDAWN)
+    sc = cam((GATE_X + 4.2, 2.4, 7.8), (GATE_X + 5.5, 2.2, -2.0), u, 0.08, 42, mood=PREDAWN)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, t=t)
     gs.glow_tree(sc, GATE_X + 6.2, -3.0, "pine", k, h=5.6, t=t, seed=3, color=gs.GOLD)
@@ -551,7 +551,7 @@ def s32(t, dur):
 
 def s33(t, dur):
     u = t / dur
-    sc = cam((GATE_X + 2.0, 0.8, 3.6), (GATE_X + 6.0, 4.2, -3.0), u, 0.1, 46, mood=PREDAWN)
+    sc = cam((GATE_X + 3.8, 2.0, 10.6), (GATE_X + 4.4, 3.6, -3.0), u, 0.05, 50, mood=PREDAWN)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, t=t)
     gs.glow_tree(sc, GATE_X + 6.2, -3.0, "pine", 1.0, h=5.6, t=t, seed=3, color=gs.GOLD)
@@ -565,7 +565,7 @@ def s33(t, dur):
 def s34(t, dur):
     u = t / dur
     k = clamp((t - 0.2) / 1.2)
-    sc = cam((GATE_X, 1.8, 6.0 - 3.0 * u), (GATE_X, 2.4, -8.0), u, 0.0, 46, mood=SUNRISE)
+    sc = cam((GATE_X, 2.6, 11.0 - 1.5 * u), (GATE_X, 2.6, -8.0), u, 0.0, 46, mood=SUNRISE)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, gate_open=k, locked=False, t=t)
     gs.peeking_flowers(sc, 0.8, t, tree_k=0.8)
@@ -580,10 +580,10 @@ def s35(t, dur):
     u = t / dur
     glow_k = clamp(t / 1.4)
     if k == 0:
-        sc = cam((GATE_X - 3.0 + 3.0 * u, 3.4, WALL_Z0 - 2.0), (GATE_X, 2.4, -20.0), u, 0.04, 50, mood=SUNRISE)
+        sc = cam((GATE_X - 0.4 + 0.4 * u, 2.8, WALL_Z0 - 1.4), (GATE_X, 2.6, WALL_Z0 - 14.0), u, 0.04, 50, mood=SUNRISE)
         gs.garden(sc, t, glow_k, weeds_k=0.0, tree_k=glow_k)
-        character(sc, RUDY_PJ, (GATE_X - 1.0, 0, WALL_Z0 - 4.0), yaw=180, face="joy", pose=dict(al=(150, -20), ar=(150, -20)))
-        character(sc, TIM, (GATE_X + 1.0, 0, WALL_Z0 - 4.0), yaw=180, face="joy", pose=dict(al=(150, -20), ar=(150, -20)))
+        character(sc, RUDY_PJ, (GATE_X - 0.9, 0, WALL_Z0 - 9.0), yaw=180, face="joy", pose=dict(al=(150, -20), ar=(150, -20)))
+        character(sc, TIM, (GATE_X + 0.9, 0, WALL_Z0 - 9.0), yaw=180, face="joy", pose=dict(al=(150, -20), ar=(150, -20)))
     else:
         sc = cam((GATE_X + 0.4, 0.6, WALL_Z0 - 2.4), (GATE_X + 0.6, 0.5, WALL_Z0 - 6.0), tt / 3.4, 0.1, 38, mood=SUNRISE)
         gs.garden(sc, t, 1.0, weeds_k=clamp(tt / 0.6), tree_k=1.0)
@@ -596,7 +596,7 @@ def s35(t, dur):
 # ------------------------------------------------------------ 36-42: the town comes running
 def s36(t, dur):
     u = t / dur
-    sc = cam((0.0, 3.0, 9.6), (0.0, 5.0, -3.0), u, 0.04, 48, mood=SUNRISE)
+    sc = cam((0.5, 3.4, 12.5), (0.5, 3.6, -3.0), u, 0.04, 50, mood=SUNRISE)
     town(sc, 0.5, 0.5, 1.0, t=t)
     gs.beam(sc, (PINE[0], 0, PINE[1]), 1.0, gs.GOLD)
     for i in range(8):
@@ -613,20 +613,20 @@ def s37(t, dur):
     run = lambda tt_: walk(tt_, 14, 34)
     if k == 0:
         x = lerp(-4.0, 1.0, clamp(tt / 1.6))
-        sc = cam((x - 0.4, 1.6, 5.4), (x, 1.3, 0.0), u, 0.05, 42, mood=SUNRISE)
+        sc = cam((x - 0.4, 2.4, 10.0), (x, 1.8, 0.0), u, 0.05, 44, mood=SUNRISE)
         town(sc, 0.4, 0.4, 0.8, t=t)
         a = character(sc, DAD_G, (x, 0, 0.0), yaw=0, face="joy", pose=dict(run(t), ar=(110, -20), er=70))
         ss.flour(sc, a, t)
         gs.cake(sc, T(*(a["hand_r"] + np.array([0.0, 0.15, 0.1]))), 0.45, t=t)
     elif k == 1:
         x = lerp(-3.0, 1.5, clamp(tt / 1.6))
-        sc = cam((x + 0.4, 1.6, 5.4), (x, 1.3, 0.0), u, 0.05, 42, mood=SUNRISE)
+        sc = cam((x + 0.4, 2.4, 10.0), (x, 1.8, 0.0), u, 0.05, 44, mood=SUNRISE)
         town(sc, 0.4, 0.4, 0.8, t=t)
         a = character(sc, PATEL, (x, 0, 0.0), yaw=0, face="joy", pose=dict(run(t), ar=(160, -20)))
         gs.chalk(sc, a, t)
         sc.box(T(*(a["hand_r"] + np.array([0.0, 0.2, 0.0]))), (0.08, 0.34, 0.08), (255, 255, 255), layer=6)
     else:
-        sc = cam((0.0, 1.8, 7.0), (0.0, 1.3, 0.0), u, 0.06, 44, mood=SUNRISE)
+        sc = cam((0.0, 2.6, 11.5), (0.0, 1.9, 0.4), u, 0.06, 46, mood=SUNRISE)
         town(sc, 0.4, 0.4, 0.8, t=t)
         for i, (spec, x) in enumerate(((DAD_G, -1.8), (PATEL, 0.0), (GOMEZ, 1.8))):
             a = character(sc, spec, (x, 0, 0.4), face="neutral", pose=dict(al=(20, 8), ar=(20, 8), head=(0, 0, 4 * (i - 1))))
@@ -640,23 +640,23 @@ def s37(t, dur):
 def s38(t, dur):
     u = t / dur
     hug = clamp((t - word_t(38, 4, dur * 0.4)) / 0.4)
-    sc = cam((GATE_X - 0.6, 1.5, WALL_Z0 - 4.4), (GATE_X, 1.3, WALL_Z0 - 8.4), u, 0.1, 40, mood=SUNRISE)
+    sc = cam((GATE_X - 0.2, 2.6, WALL_Z0 - 0.9), (GATE_X + 0.2, 1.9, WALL_Z0 - 8.0), u, 0.06, 50, mood=SUNRISE)
     gs.garden(sc, t, 1.0)
     pose = dict(al=(80, -30), ar=(80, -30), el=50, er=50) if hug >= 1 else dict(al=(20, 8), ar=(100, -20), er=80)
-    a = character(sc, GOMEZ, (GATE_X - lerp(1.2, 0.6, hug), 0, WALL_Z0 - 7.0), yaw=-10 + 90 * 0, face="cry" if hug < 1 else "joy",
+    a = character(sc, GOMEZ, (GATE_X - lerp(1.0, 0.5, hug), 0, WALL_Z0 - 7.6), yaw=-10 + 90 * 0, face="cry" if hug < 1 else "joy",
                   pose=pose, face_extra=gs.dirt_cheeks)
     gs.sunhat(sc, a, GOMEZ)
     gs.garden_gloves(sc, a)
-    character(sc, TIM, (GATE_X + lerp(1.4, 0.5, hug), 0, WALL_Z0 - 7.0), yaw=10, face="joy" if hug >= 1 else "shock",
+    character(sc, TIM, (GATE_X + lerp(1.2, 0.5, hug), 0, WALL_Z0 - 7.6), yaw=10, face="joy" if hug >= 1 else "shock",
               pose=pose if hug >= 1 else dict(al=(20, 8), ar=(20, 8)))
-    character(sc, RUDY_G, (GATE_X + 3.2, 0, WALL_Z0 - 8.0), yaw=-30, face="joy", pose=dict(ar=(40, 10)))
+    character(sc, RUDY_G, (GATE_X + 1.7, 0, WALL_Z0 - 8.6), yaw=-30, face="joy", pose=dict(ar=(40, 10)))
     return sc
 
 
 def s39(t, dur):
     u = t / dur
     off = t > word_t(39, 8, dur * 0.6)
-    sc = cam((1.2, 2.2, 9.0), (GATE_X - 3.0, 2.0, -4.0), u, 0.06, 44, mood=SUNRISE)
+    sc = cam((1.6, 2.8, 15.0), (3.4, 2.4, -4.0), u, 0.05, 44, mood=SUNRISE)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, gate_open=1.0, locked=False, t=t)
     gs.peeking_flowers(sc, 1.0, t, tree_k=1.0)
@@ -669,12 +669,12 @@ def s39(t, dur):
 
 def s40(t, dur):
     u = t / dur
-    sc = cam((GATE_X - 4.0 + 2.0 * u, 2.4, 8.6), (GATE_X, 2.4, -4.0), u, 0.04, 44, mood=SUNRISE)
+    sc = cam((GATE_X - 0.6, 2.8, 16.0), (GATE_X - 0.6, 2.6, -4.0), u, 0.04, 46, mood=SUNRISE)
     gs.lot(sc, t)
     gs.ivy_wall(sc, 1.0, gate_open=1.0, locked=False, t=t)
     gs.peeking_flowers(sc, 1.0, t, tree_k=1.0)
-    gs.bulldozer(sc, T(GATE_X - 6.0 - 3.0 * u, 0, -0.4) @ RY(-60), t, engine=True)
-    gs.lot_sign(sc, T(GATE_X + 3.6, 0, 1.0) @ RY(-10), state="garden")
+    gs.bulldozer(sc, T(GATE_X - 3.2 - 3.0 * u, 0, -0.4) @ RY(-60), t, engine=True)
+    gs.lot_sign(sc, T(GATE_X + 1.8, 0, 1.0) @ RY(-10), state="garden")
     sparks(sc, (GATE_X, 2.6, -5.0), t, seed=7, n=8, r=3.0, color=gs.GOLD)
     return sc
 
@@ -682,12 +682,12 @@ def s40(t, dur):
 def s41(t, dur):
     u = t / dur
     c = np.array([GATE_X, 0.0, WALL_Z0 - 8.0])
-    sc = cam((GATE_X - 2.0, 3.0, WALL_Z0 - 2.4), (GATE_X, 0.6, WALL_Z0 - 8.0), u, 0.06, 46, mood=DAY, bloom=0.4)
+    sc = cam((GATE_X, 8.8, WALL_Z0 + 3.0), (GATE_X, 0.6, WALL_Z0 - 8.0), u, 0.04, 50, mood=DAY, bloom=0.4)
     gs.garden(sc, t, 1.0, lights=False)
     gs.picnic(sc, T(*c))
     gs.cake(sc, T(c[0], 0.04, c[2]), 0.8, flame=False)
-    ring = [(RUDY_G, -2.0, 0.2, "joy"), (TIM, -1.2, -1.2, "grin"), (DAD_G, 1.2, -1.2, "joy"), (PATEL, 2.0, 0.2, "laugh"),
-            (GOMEZ, 0.0, 1.2, "joy")]
+    ring = [(RUDY_G, -0.9, 0.9, "joy"), (TIM, 0.9, 0.9, "grin"), (DAD_G, -1.4, -1.1, "joy"), (PATEL, 1.4, -1.1, "laugh"),
+            (GOMEZ, 0.0, -1.5, "joy")]
     for spec, dx, dz, face in ring:
         ll = spec["leg"][1] * spec["s"]
         p = sit()
@@ -703,14 +703,14 @@ def s42(t, dur):
     u = t / dur
     k = clamp((t - word_t(42, 6, dur * 0.6)) / 0.5)
     pose = dict(ar=(120, -20), er=100, head=(0, 6, 0))
-    sc = head_cu(DAD_G, (GATE_X, 0, WALL_Z0 - 8.0), 0, pose, u, dist=3.0, up=0.15, fov=34, mood=DAY, bloom=0.8)
+    sc = head_cu(DAD_G, (GATE_X, 0, WALL_Z0 - 8.0), 0, pose, u, dist=5.2, up=0.1, fov=36, mood=DAY, bloom=0.8)
     gs.garden(sc, t, 1.0, lights=False)
     gs.glow_tree(sc, GATE_X + 3.2, WALL_Z0 - 12.0, "oak", k, h=5.0, t=t, seed=1)
     a = character(sc, DAD_G, (GATE_X, 0, WALL_Z0 - 8.0), face="grin" if t < dur * 0.5 else "joy", pose=pose)
     ss.flour(sc, a, t)
     sc.blob(T(*(a["hand_r"] + np.array([0.0, 0.1, 0.05]))), (0.16, 0.16, 0.16), (255, 150, 190), layer=7, n=8, m=6)
     sc.blob(T(*(a["face_pt"] + np.array([0.1, -0.05, 0.04]))), (0.12, 0.12, 0.12), (255, 150, 190), layer=7, n=8, m=6)
-    ls.sticker(sc, a["head"], "BUSTED!", t, start=word_t(42, 6, dur * 0.6), hold=2.4, size=0.6, dx=1.0, dy=0.9,
+    ls.sticker(sc, a["head"], "BUSTED!", t, start=word_t(42, 6, dur * 0.6), hold=2.4, size=0.5, dx=0.0, dy=1.6,
                color=(255, 160, 40))
     return sc
 
