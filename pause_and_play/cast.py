@@ -806,6 +806,16 @@ def _hair(sc, spec, Mh, hw, hh, hd, s, layer, live):
                 blob(T(sx * (rx + 0.04 * s), -hh * 0.04, 0.04 * s), (0.12 * s, 0.22 * s, 0.14 * s), spec["skin"],
                      e=0.8, bias=-0.1, n=10, m=6)
         return 0.02
+    if st == "ponytail":
+        back(0.9, 0.0)
+        cap(0.44, 0.44)
+        fringe(4, 0.78, 0.16)
+        blob(T(0, hh * 0.52, -rz * 1.05), (0.3 * s, 0.3 * s, 0.3 * s), hair, e=0.8, bias=0.05, n=10, m=7)
+        blob(T(0, hh * 0.28, -rz * 1.35) @ RX(-16), (0.26 * s, 0.82 * s, 0.26 * s), hair, e=0.8, bias=0.05, n=10, m=7)
+        if spec.get("accent"):
+            blob(T(0, hh * 0.52, -rz * 0.98), (0.34 * s, 0.1 * s, 0.34 * s), spec["accent"], e=0.6, bias=0.0, n=10,
+                 m=4)
+        return 0.3
     if st == "bun":
         back(0.95, -0.02)
         cap(0.46, 0.44)
